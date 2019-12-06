@@ -1,7 +1,18 @@
 package com.pilates.app;
 
-import android.app.Activity;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.neovisionaries.ws.client.WebSocket;
+import com.neovisionaries.ws.client.WebSocketException;
+import com.neovisionaries.ws.client.WebSocketFactory;
+import com.pilates.app.model.Action;
+import com.pilates.app.model.ActionBody;
+import com.pilates.app.model.ActionType;
+import com.pilates.app.model.Candidate;
+import com.pilates.app.model.UserRole;
+import com.pilates.app.model.UserSession;
 
 import org.webrtc.Camera1Enumerator;
 import org.webrtc.DefaultVideoDecoderFactory;
@@ -19,23 +30,30 @@ import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends Activity {
+
+
+public class MainActivity extends AppCompatActivity {
+    WebSocketFactory factory = new WebSocketFactory();
+    UserSession userSession = new UserSession("ANDROID", UserRole.NO_ROLE);
+    WSAdapter adapter = new WSAdapter();
+    WebSocket ws;
 
     PeerConnectionFactory peerConnectionFactory;
-    PeerConnection peerConnectionLocal;
-    PeerConnection peerConnectionRemote;
+    PeerConnection peerConnection;
     SurfaceViewRenderer localView;
     SurfaceViewRenderer remoteView;
-    MediaStream mediaStreamLocal;
-    MediaStream mediaStreamRemote;
+    MediaStream mediaStream;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         EglBase.Context eglBaseContext = EglBase.create().getEglBaseContext();
 
         // create PeerConnectionFactory
@@ -67,95 +85,109 @@ public class MainActivity extends Activity {
         // create VideoTrack
         VideoTrack videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
 //        // display in localView
-//        videoTrack.addSink(localView);
+        videoTrack.addSink(localView);
 
-
-
-
-        SurfaceTextureHelper remoteSurfaceTextureHelper = SurfaceTextureHelper.create("RemoteCaptureThread", eglBaseContext);
-        // create VideoCapturer
-        VideoCapturer remoteVideoCapturer = createCameraCapturer(false);
-        VideoSource remoteVideoSource = peerConnectionFactory.createVideoSource(remoteVideoCapturer.isScreencast());
-        remoteVideoCapturer.initialize(remoteSurfaceTextureHelper, getApplicationContext(), remoteVideoSource.getCapturerObserver());
-        remoteVideoCapturer.startCapture(480, 640, 30);
 
         remoteView = findViewById(R.id.svRemoteView);
         remoteView.setMirror(false);
         remoteView.init(eglBaseContext, null);
 
-        // create VideoTrack
-        VideoTrack remoteVideoTrack = peerConnectionFactory.createVideoTrack("102", remoteVideoSource);
-//        // display in remoteView
-//        remoteVideoTrack.addSink(remoteView);
 
+        mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
+        mediaStream.addTrack(videoTrack);
 
+        adapter.setUserSession(userSession);
 
-        mediaStreamLocal = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
-        mediaStreamLocal.addTrack(videoTrack);
+        call();
 
-        mediaStreamRemote = peerConnectionFactory.createLocalMediaStream("mediaStreamRemote");
-        mediaStreamRemote.addTrack(remoteVideoTrack);
-
-        call(mediaStreamLocal, mediaStreamRemote);
     }
 
 
-    private void call(MediaStream localMediaStream, MediaStream remoteMediaStream) {
+    private void call() {
+
         List<PeerConnection.IceServer> iceServers = new ArrayList<>();
-        peerConnectionLocal = peerConnectionFactory.createPeerConnection(iceServers, new PeerConnectionAdapter("localconnection") {
+        iceServers.add(PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer());
+        peerConnection = peerConnectionFactory.createPeerConnection(iceServers, new PeerConnectionAdapter("localconnection") {
             @Override
             public void onIceCandidate(IceCandidate iceCandidate) {
                 super.onIceCandidate(iceCandidate);
-                peerConnectionRemote.addIceCandidate(iceCandidate);
+                System.out.println("SENDING ICE: " + iceCandidate);
+
+                final Candidate candidate = Candidate.newBuilder()
+                        .withCandidate(iceCandidate.sdp)
+                        .withSdpMid(iceCandidate.sdpMid)
+                        .withSdpMLineIndex(iceCandidate.sdpMLineIndex).build();
+                final ActionBody body = ActionBody.newBuilder().withIceCandidate(candidate).build();
+
+
+                ws.sendText(new Action(ActionType.ICE_EXCHANGE, body).toString());
+//                userSession.addLocalCandidate(candidate);
+
+//                adapter.sendText(new Action(ActionType.ICE_EXCHANGE, body));
+                //send ice to signaling
             }
 
             @Override
             public void onAddStream(MediaStream mediaStream) {
                 super.onAddStream(mediaStream);
+                System.out.println("STREAM TO LOCAL VIEW ADDED");
                 VideoTrack remoteVideoTrack = mediaStream.videoTracks.get(0);
-                runOnUiThread(() -> {
-                    remoteVideoTrack.addSink(localView);
-                });
+                runOnUiThread(() -> remoteVideoTrack.addSink(remoteView));
             }
         });
 
-        peerConnectionRemote = peerConnectionFactory.createPeerConnection(iceServers, new PeerConnectionAdapter("remoteconnection") {
-            @Override
-            public void onIceCandidate(IceCandidate iceCandidate) {
-                super.onIceCandidate(iceCandidate);
-                peerConnectionLocal.addIceCandidate(iceCandidate);
-            }
+        peerConnection.addStream(mediaStream);
 
-            @Override
-            public void onAddStream(MediaStream mediaStream) {
-                super.onAddStream(mediaStream);
-                VideoTrack localVideoTrack = mediaStream.videoTracks.get(0);
-                runOnUiThread(() -> {
-                    localVideoTrack.addSink(remoteView);
-                });
-            }
-        });
 
-        peerConnectionLocal.addStream(localMediaStream);
-        peerConnectionLocal.createOffer(new SdpAdapter("local offer sdp") {
+        peerConnection.createOffer(new SdpAdapter("local offer sdp") {
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
                 super.onCreateSuccess(sessionDescription);
-                // todo crashed here
-                peerConnectionLocal.setLocalDescription(new SdpAdapter("local set local"), sessionDescription);
-                peerConnectionRemote.addStream(remoteMediaStream);
-                peerConnectionRemote.setRemoteDescription(new SdpAdapter("remote set remote"), sessionDescription);
-                peerConnectionRemote.createAnswer(new SdpAdapter("remote answer sdp") {
-                    @Override
-                    public void onCreateSuccess(SessionDescription sdp) {
-                        super.onCreateSuccess(sdp);
-                        peerConnectionRemote.setLocalDescription(new SdpAdapter("remote set local"), sdp);
-                        peerConnectionLocal.setRemoteDescription(new SdpAdapter("local set remote"), sdp);
-                    }
-                }, new MediaConstraints());
+                ws = createWs("ws://192.168.100.5:8080/streaming/calln");
+                adapter.setPeerConnection(peerConnection);
+                System.out.println("OFFER CREATED");
+                peerConnection.setLocalDescription(new SdpAdapter("local set local"), sessionDescription);
+                final String description = sessionDescription.description;
+                userSession.setOffer(description);
+
+                final ActionBody body = ActionBody.newBuilder().withName("PC").withOffer(description).build();
+                final Action action = new Action(ActionType.CONNECT_TO, body);
+
+                ws.sendText(action.toString());
             }
         }, new MediaConstraints());
+
+
     }
+
+    private WebSocket createWs(final String url) {
+        try {
+            System.out.println("WEB SOCKET ESTABLISHING by url: " + url);
+            ws = factory.createSocket(url);
+
+            ws.addListener(adapter);
+            System.out.println("WEB SOCKET ESTABLISHED");
+            return ws.connect();
+        } catch (IOException e) {
+            System.out.println("ERROR");
+            System.out.println(e.toString());
+        } catch (WebSocketException e) {
+            e.printStackTrace();
+        }
+        throw new RuntimeException();
+    }
+
+    //todo setRemote description when answer get   runOnUiThread(() -> {
+    // peerConnection.setRemoteDescription(new SdpAdapter("localSetRemote"),
+    //                new SessionDescription(SessionDescription.Type.ANSWER, data.optString("sdp")));
+
+
+    //todo ice
+    // peerConnection.addIceCandidate(new IceCandidate(
+    //                data.optString("id"),
+    //                data.optInt("label"),
+    //                data.optString("candidate")
+    //        ));
 
     private VideoCapturer createCameraCapturer(boolean isFront) {
         Camera1Enumerator enumerator = new Camera1Enumerator(false);
@@ -174,5 +206,8 @@ public class MainActivity extends Activity {
 
         return null;
     }
+
+
+
 
 }
