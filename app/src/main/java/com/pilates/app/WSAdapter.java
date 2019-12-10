@@ -23,13 +23,11 @@ import java.util.Objects;
 
 public class WSAdapter extends WebSocketAdapter {
 
-    private UserSession userSession;
-    private PeerConnection peerConnection;
+     PeerConnection peerConnection;
 
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
         System.out.println("Connected");
-        userSession.setWsSession(websocket);
 //        final ActionBody android = ActionBody.newBuilder().withName("Android").withRole(UserRole.TRAINER).build();
 //        final Action action = new Action(ActionType.REGISTER, android);
 //
@@ -56,6 +54,8 @@ public class WSAdapter extends WebSocketAdapter {
 //        JSONObject jsonObject = new JSONObject(text);
 //        final JSONObject body = jsonObject.getJSONObject("body");
 //        final String type = jsonObject.getString("type");
+
+
 
         if (Objects.equals(type, ActionType.ICE_EXCHANGE)) {
             Candidate candidate = body.getCandidate();
@@ -87,9 +87,6 @@ public class WSAdapter extends WebSocketAdapter {
         System.out.println("Disconnected");
     }
 
-    public void setUserSession(UserSession userSession) {
-        this.userSession = userSession;
-    }
 
     public void setPeerConnection(PeerConnection peerConnection) {
         this.peerConnection = peerConnection;

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PilatesApp</string>
+    <string name="Trainee">Trainee</string>
+    <string name="Trainer">Trainer</string>
 </resources>

@@ -20,7 +20,7 @@ public class UserSession {
 
     private boolean init;
     private String offer;
-    private  WebSocket wsSession;
+    private WebSocket wsSession;
 
     public UserSession(final String name, final UserRole role) {
         this.name = name;

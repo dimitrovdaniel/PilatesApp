@@ -38,7 +38,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     WebSocketFactory factory = new WebSocketFactory();
-    UserSession userSession = new UserSession("ANDROID", UserRole.NO_ROLE);
     WSAdapter adapter = new WSAdapter();
     WebSocket ws;
 
@@ -96,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
         mediaStream = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
         mediaStream.addTrack(videoTrack);
 
-        adapter.setUserSession(userSession);
 
         call();
 
@@ -143,15 +141,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCreateSuccess(SessionDescription sessionDescription) {
                 super.onCreateSuccess(sessionDescription);
-                ws = createWs("ws://192.168.100.5:8080/streaming/calln");
+                //TODO cnhage to your signaling ws
+                ws = createWs("ws://192.168.33.31:8080/streaming/callone");
                 adapter.setPeerConnection(peerConnection);
                 System.out.println("OFFER CREATED");
+
                 peerConnection.setLocalDescription(new SdpAdapter("local set local"), sessionDescription);
                 final String description = sessionDescription.description;
-                userSession.setOffer(description);
 
-                final ActionBody body = ActionBody.newBuilder().withName("PC").withOffer(description).build();
-                final Action action = new Action(ActionType.CONNECT_TO, body);
+                UserSession user = UserRegistry.getInstance().getUser();
+                final ActionBody body = ActionBody.newBuilder().withName(user.getName()).withRole(user.getRole()).withOffer(description).build();
+                final Action action = new Action(ActionType.REGISTER, body);
 
                 ws.sendText(action.toString());
             }
