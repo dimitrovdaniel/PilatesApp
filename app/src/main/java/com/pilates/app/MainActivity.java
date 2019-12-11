@@ -139,15 +139,22 @@ public class MainActivity extends AppCompatActivity {
 //                ws = createWs("ws://192.168.33.31:8080/streaming/callone");
 //                adapter.setPeerConnection(peerConnection);
                 SignalingWebSocketAdapter.getInstance().setPeerConnection(peerConnection);
-                System.out.println("OFFER CREATED");
+                System.out.println("OFFER CREATED: " + sessionDescription.description);
 
                 peerConnection.setLocalDescription(new SdpAdapter("local set local"), sessionDescription);
                 final String description = sessionDescription.description;
+                final UserSession user = UserRegistry.getInstance().getUser();
+                final String calleeName = user.getCalleeName();
 
                 final ActionBody body = ActionBody.newBuilder().withOffer(description).build();
                 final Action action = new Action(ActionType.OFFER, body);
 
                 SignalingWebSocket.getInstance().sendMessage(action);
+
+                if (calleeName != null) {
+                    final ActionBody calleBody = ActionBody.newBuilder().withName(calleeName).build();
+                    SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.CONNECT_TO, calleBody));
+                }
 //                ws.sendText(action.toString());
             }
         }, new MediaConstraints());

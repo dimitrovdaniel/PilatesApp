@@ -15,9 +15,11 @@ public class UserSession {
     private final String name;
     private final UserRole role;
 
+
     private final List<Candidate> localCandidates = new ArrayList<Candidate>();
     private final List<Candidate> remoteCandidates = new ArrayList<Candidate>();
 
+    private String calleeName;
     private boolean init;
     private String offer;
     private WebSocket wsSession;
@@ -87,5 +89,13 @@ public class UserSession {
 
     public void setWsSession(WebSocket wsSession) {
         this.wsSession = wsSession;
+    }
+
+    public String getCalleeName() {
+        return calleeName;
+    }
+
+    public void setCalleeName(String calleeName) {
+        this.calleeName = calleeName;
     }
 }

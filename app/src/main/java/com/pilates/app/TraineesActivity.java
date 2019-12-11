@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
+import com.pilates.app.model.UserSession;
 import com.pilates.app.ws.SignalingWebSocket;
 
 import java.util.List;
@@ -45,8 +46,11 @@ public class TraineesActivity extends AppCompatActivity {
             if (traineeName == null) {
                 throw new RuntimeException("No trainee name");
             }
-            final ActionBody body = ActionBody.newBuilder().withName(traineeName).build();
-            SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.CONNECT_TO, body));
+
+            final UserSession user = UserRegistry.getInstance().getUser();
+            user.setCalleeName(traineeName);
+//            final ActionBody body = ActionBody.newBuilder().withName(traineeName).build();
+//            SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.CONNECT_TO, body));
 
             startActivity(new Intent(this, MainActivity.class));
         });

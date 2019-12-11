@@ -32,6 +32,7 @@ public class PeerConnectionAdapter implements PeerConnection.Observer {
     @Override
     public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
         log("onIceConnectionChange " + iceConnectionState);
+        // when ice ended CONNECTED
     }
 
     @Override
@@ -42,6 +43,8 @@ public class PeerConnectionAdapter implements PeerConnection.Observer {
     @Override
     public void onIceGatheringChange(PeerConnection.IceGatheringState iceGatheringState) {
         log("onIceGatheringChange " + iceGatheringState);
+
+        //when ice ended COMPLETE
     }
 
     @Override
