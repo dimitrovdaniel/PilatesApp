@@ -1,9 +1,19 @@
 package com.pilates.app;
 
+import android.widget.ArrayAdapter;
+
 import com.pilates.app.model.UserSession;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UserRegistry {
     private static UserRegistry instance = new UserRegistry();
+    private final ConcurrentHashMap<String, String> traineesById = new ConcurrentHashMap<>();
+    private ArrayAdapter<String> traineeAdapter;
+
     private UserSession userSession;
 
     private UserRegistry() {
@@ -27,6 +37,32 @@ public class UserRegistry {
         }
 
         return instance;
+    }
+
+
+    public List<String> getTraineeNames() {
+        return new ArrayList<>(traineesById.values());
+    }
+
+    public void putAllTrainees(final Map<String, String> trainees) {
+        traineesById.putAll(trainees);
+        if (this.traineeAdapter != null) {
+            this.traineeAdapter.addAll(getTraineeNames());
+            this.traineeAdapter.notifyDataSetChanged();
+
+        }
+    }
+
+    public void putTrainee(final String id, final String username) {
+        traineesById.put(id, username);
+        if (this.traineeAdapter != null) {
+            this.traineeAdapter.add(username);
+            this.traineeAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public void setAdapter(final ArrayAdapter<String> traineeAdapter) {
+        this.traineeAdapter = traineeAdapter;
     }
 
 }

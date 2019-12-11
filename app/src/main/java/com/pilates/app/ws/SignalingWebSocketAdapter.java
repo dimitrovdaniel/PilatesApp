@@ -1,29 +1,41 @@
-package com.pilates.app;
+package com.pilates.app.ws;
 
 import com.google.gson.Gson;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
+import com.pilates.app.SdpAdapter;
+import com.pilates.app.UserRegistry;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.Candidate;
-import com.pilates.app.model.UserSession;
 
-import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 import org.webrtc.SessionDescription;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class WSAdapter extends WebSocketAdapter {
+public class SignalingWebSocketAdapter extends WebSocketAdapter {
 
-     PeerConnection peerConnection;
+    private static SignalingWebSocketAdapter instance = new SignalingWebSocketAdapter();
+    private final UserRegistry userRegistry = UserRegistry.getInstance();
+
+    private PeerConnection peerConnection;
+
+    private SignalingWebSocketAdapter() { }
+
+    public static SignalingWebSocketAdapter getInstance() {
+        if (instance == null) {
+            instance = new SignalingWebSocketAdapter();
+        }
+
+        return instance;
+    }
 
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
@@ -56,15 +68,21 @@ public class WSAdapter extends WebSocketAdapter {
 //        final String type = jsonObject.getString("type");
 
 
-
         if (Objects.equals(type, ActionType.ICE_EXCHANGE)) {
             Candidate candidate = body.getCandidate();
-            peerConnection.addIceCandidate(new IceCandidate(candidate.getSdpMid(), candidate.getSdpMLineIndex(), candidate.getCandidate()));
+            getPeerConnection().addIceCandidate(new IceCandidate(candidate.getSdpMid(), candidate.getSdpMLineIndex(), candidate.getCandidate()));
 
         } else if (Objects.equals(type, ActionType.ANSWER)) {
-            peerConnection.setRemoteDescription(new SdpAdapter("localSetRemote"),
-                                    new SessionDescription(SessionDescription.Type.ANSWER, body.getAnswer()));
+            getPeerConnection().setRemoteDescription(new SdpAdapter("localSetRemote"),
+                    new SessionDescription(SessionDescription.Type.ANSWER, body.getAnswer()));
 
+        } else if (Objects.equals(type, ActionType.TRAINEES)) {
+            final Map<String, String> trainees = body.getRegisteredUsers();
+            userRegistry.putAllTrainees(trainees);
+        } else if (Objects.equals(type, ActionType.ADD_TRAINEE)) {
+            final String id = body.getId();
+            final String name = body.getName();
+            userRegistry.putTrainee(id, name);
         }
 //        System.out.println("AFTER MAPPING TYPE : " + type);
 //        System.out.println("AFTER MAPPING BODY : " + body);
@@ -88,7 +106,16 @@ public class WSAdapter extends WebSocketAdapter {
     }
 
 
-    public void setPeerConnection(PeerConnection peerConnection) {
+    public void setPeerConnection(final PeerConnection peerConnection) {
         this.peerConnection = peerConnection;
     }
+
+    private PeerConnection getPeerConnection() {
+        if (this.peerConnection == null) {
+            throw new RuntimeException("Peer connection can not be null");
+        }
+
+        return this.peerConnection;
+    }
+
 }

@@ -4,15 +4,13 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketException;
-import com.neovisionaries.ws.client.WebSocketFactory;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.Candidate;
-import com.pilates.app.model.UserRole;
 import com.pilates.app.model.UserSession;
+import com.pilates.app.ws.SignalingWebSocket;
+import com.pilates.app.ws.SignalingWebSocketAdapter;
 
 import org.webrtc.Camera1Enumerator;
 import org.webrtc.DefaultVideoDecoderFactory;
@@ -30,17 +28,13 @@ import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 
 
 public class MainActivity extends AppCompatActivity {
-    WebSocketFactory factory = new WebSocketFactory();
-    WSAdapter adapter = new WSAdapter();
-    WebSocket ws;
-
+//    SignalingWebSocket ws = SignalingWebSocket.getInstance();
     PeerConnectionFactory peerConnectionFactory;
     PeerConnection peerConnection;
     SurfaceViewRenderer localView;
@@ -118,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 final ActionBody body = ActionBody.newBuilder().withIceCandidate(candidate).build();
 
 
-                ws.sendText(new Action(ActionType.ICE_EXCHANGE, body).toString());
+                SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.ICE_EXCHANGE, body));
 //                userSession.addLocalCandidate(candidate);
 
 //                adapter.sendText(new Action(ActionType.ICE_EXCHANGE, body));
@@ -142,39 +136,23 @@ public class MainActivity extends AppCompatActivity {
             public void onCreateSuccess(SessionDescription sessionDescription) {
                 super.onCreateSuccess(sessionDescription);
                 //TODO cnhage to your signaling ws
-                ws = createWs("ws://192.168.33.31:8080/streaming/callone");
-                adapter.setPeerConnection(peerConnection);
+//                ws = createWs("ws://192.168.33.31:8080/streaming/callone");
+//                adapter.setPeerConnection(peerConnection);
+                SignalingWebSocketAdapter.getInstance().setPeerConnection(peerConnection);
                 System.out.println("OFFER CREATED");
 
                 peerConnection.setLocalDescription(new SdpAdapter("local set local"), sessionDescription);
                 final String description = sessionDescription.description;
 
-                UserSession user = UserRegistry.getInstance().getUser();
-                final ActionBody body = ActionBody.newBuilder().withName(user.getName()).withRole(user.getRole()).withOffer(description).build();
-                final Action action = new Action(ActionType.REGISTER, body);
+                final ActionBody body = ActionBody.newBuilder().withOffer(description).build();
+                final Action action = new Action(ActionType.OFFER, body);
 
-                ws.sendText(action.toString());
+                SignalingWebSocket.getInstance().sendMessage(action);
+//                ws.sendText(action.toString());
             }
         }, new MediaConstraints());
 
 
-    }
-
-    private WebSocket createWs(final String url) {
-        try {
-            System.out.println("WEB SOCKET ESTABLISHING by url: " + url);
-            ws = factory.createSocket(url);
-
-            ws.addListener(adapter);
-            System.out.println("WEB SOCKET ESTABLISHED");
-            return ws.connect();
-        } catch (IOException e) {
-            System.out.println("ERROR");
-            System.out.println(e.toString());
-        } catch (WebSocketException e) {
-            e.printStackTrace();
-        }
-        throw new RuntimeException();
     }
 
     //todo setRemote description when answer get   runOnUiThread(() -> {
