@@ -37,10 +37,12 @@ public class TraineesActivity extends AppCompatActivity {
         userRegistry.setListener(new DataChangedListener() {
             @Override
             public void changed() {
+                System.out.println("[TRAINEE LISTENER] called pre runonuithread");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         adapter.notifyDataSetChanged();
+                        System.out.println("[TRAINEE LISTENER] called for change");
                     }
                 });
             }

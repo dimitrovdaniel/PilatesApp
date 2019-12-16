@@ -60,6 +60,7 @@ public class UserRegistry {
         if (this.traineeAdapter != null) {
             this.traineeAdapter.clear();
             this.traineeAdapter.addAll(getTraineeNames());
+            System.out.println("[USER REGISTRY] called pre change");
             this.listener.changed();
         }
     }
@@ -68,6 +69,7 @@ public class UserRegistry {
         traineesById.put(id, username);
         if (this.traineeAdapter != null) {
             this.traineeAdapter.add(username);
+            System.out.println("[USER REGISTRY] called pre change");
             this.listener.changed();
         }
     }
