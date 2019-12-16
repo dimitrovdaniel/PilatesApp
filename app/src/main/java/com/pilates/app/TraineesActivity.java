@@ -38,6 +38,7 @@ public class TraineesActivity extends AppCompatActivity {
             System.out.println("[TRAINEE LISTENER] called pre runonuithread");
             runOnUiThread(() -> {
                 adapter.notifyDataSetChanged();
+                traineesList.invalidateViews();
                 System.out.println("[TRAINEE LISTENER] called for change");
             });
         });
