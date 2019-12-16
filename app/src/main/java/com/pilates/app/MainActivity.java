@@ -1,5 +1,6 @@
 package com.pilates.app;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -162,6 +163,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private Activity getActivity() {
+        return this;
+    }
     //todo setRemote description when answer get   runOnUiThread(() -> {
     // peerConnection.setRemoteDescription(new SdpAdapter("localSetRemote"),
     //                new SessionDescription(SessionDescription.Type.ANSWER, data.optString("sdp")));

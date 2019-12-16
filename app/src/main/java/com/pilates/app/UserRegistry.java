@@ -1,7 +1,10 @@
 package com.pilates.app;
 
+import android.app.Activity;
+import android.content.Context;
 import android.widget.ArrayAdapter;
 
+import com.pilates.app.listeners.DataChangedListener;
 import com.pilates.app.model.UserSession;
 
 import java.util.ArrayList;
@@ -10,14 +13,20 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UserRegistry {
-    private static UserRegistry instance = new UserRegistry();
+    private static UserRegistry instance;
     private final ConcurrentHashMap<String, String> traineesById = new ConcurrentHashMap<>();
     private ArrayAdapter<String> traineeAdapter;
     private final List<String> traineeNames = new ArrayList<>();
 
     private UserSession userSession;
+    private DataChangedListener listener;
 
     private UserRegistry() {
+
+    }
+
+    public void setListener(DataChangedListener listener) {
+        this.listener = listener;
     }
 
     public void saveUser(final UserSession userSession) {
@@ -49,9 +58,9 @@ public class UserRegistry {
     public void putAllTrainees(final Map<String, String> trainees) {
         traineesById.putAll(trainees);
         if (this.traineeAdapter != null) {
+            this.traineeAdapter.clear();
             this.traineeAdapter.addAll(getTraineeNames());
-//            this.traineeAdapter.notifyDataSetChanged();
-
+            this.listener.changed();
         }
     }
 
@@ -59,7 +68,7 @@ public class UserRegistry {
         traineesById.put(id, username);
         if (this.traineeAdapter != null) {
             this.traineeAdapter.add(username);
-//            this.traineeAdapter.notifyDataSetChanged();
+            this.listener.changed();
         }
     }
 

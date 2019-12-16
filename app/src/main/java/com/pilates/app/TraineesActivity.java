@@ -9,6 +9,7 @@ import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.pilates.app.listeners.DataChangedListener;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
@@ -33,6 +34,17 @@ public class TraineesActivity extends AppCompatActivity {
         final ArrayAdapter<String> adapter = new ArrayAdapter(this,
                 android.R.layout.simple_list_item_1, traineeNames);
 
+        userRegistry.setListener(new DataChangedListener() {
+            @Override
+            public void changed() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        });
         userRegistry.setAdapter(adapter);
         traineesList.setAdapter(adapter);
 
