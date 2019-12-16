@@ -34,18 +34,12 @@ public class TraineesActivity extends AppCompatActivity {
         final ArrayAdapter<String> adapter = new ArrayAdapter(this,
                 android.R.layout.simple_list_item_1, traineeNames);
 
-        userRegistry.setListener(new DataChangedListener() {
-            @Override
-            public void changed() {
-                System.out.println("[TRAINEE LISTENER] called pre runonuithread");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter.notifyDataSetChanged();
-                        System.out.println("[TRAINEE LISTENER] called for change");
-                    }
-                });
-            }
+        userRegistry.setListener(() -> {
+            System.out.println("[TRAINEE LISTENER] called pre runonuithread");
+            runOnUiThread(() -> {
+                adapter.notifyDataSetChanged();
+                System.out.println("[TRAINEE LISTENER] called for change");
+            });
         });
         userRegistry.setAdapter(adapter);
         traineesList.setAdapter(adapter);
