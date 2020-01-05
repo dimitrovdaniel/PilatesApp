@@ -1,10 +1,9 @@
 package com.pilates.app;
 
-import android.app.Activity;
-import android.content.Context;
-import android.widget.ArrayAdapter;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 
-import com.pilates.app.listeners.DataChangedListener;
 import com.pilates.app.model.UserSession;
 
 import java.util.ArrayList;
@@ -12,22 +11,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import androidx.annotation.RequiresApi;
+
+
 public class UserRegistry {
-    private static UserRegistry instance;
-    private final ConcurrentHashMap<String, String> traineesById = new ConcurrentHashMap<>();
-    private ArrayAdapter<String> traineeAdapter;
+    private static UserRegistry instance = new UserRegistry();
+    private final Map<String, String> trainersById = new ConcurrentHashMap<>();
     private final List<String> traineeNames = new ArrayList<>();
 
     private UserSession userSession;
-    private DataChangedListener listener;
+    private Handler handler;
 
     private UserRegistry() {
 
     }
 
-    public void setListener(DataChangedListener listener) {
-        this.listener = listener;
+
+    public void setHandler(Handler handler) {
+        this.handler = handler;
     }
+
 
     public void saveUser(final UserSession userSession) {
         this.userSession = userSession;
@@ -43,43 +46,40 @@ public class UserRegistry {
 
     public static UserRegistry getInstance() {
         if (instance == null) {
-             instance = new UserRegistry();
+            instance = new UserRegistry();
         }
 
         return instance;
     }
 
 
-    public List<String> getTraineeNames() {
-        traineeNames.addAll(traineesById.values());
+    public List<String> getTrainerNames() {
+        traineeNames.addAll(trainersById.values());
         return traineeNames;
     }
 
-    public void putAllTrainees(final Map<String, String> trainees) {
-        traineesById.putAll(trainees);
-        if (this.traineeAdapter != null) {
-            this.traineeAdapter.clear();
-            this.traineeAdapter.addAll(getTraineeNames());
-            System.out.println("[USER REGISTRY] called pre change");
-            this.listener.changed();
-        }
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void putAllTrainers(final Map<String, String> trainees) {
+        System.out.println("PUTTING ALL TRAINEES");
+        trainersById.putAll(trainees);
+        trainersById.values().forEach(this::addToTrainerList);
     }
 
-    public void putTrainee(final String id, final String username) {
-        traineesById.put(id, username);
-        if (this.traineeAdapter != null) {
-            this.traineeAdapter.add(username);
-            System.out.println("[USER REGISTRY] called pre change");
-            this.listener.changed();
+    public void putTrainer(final String id, final String username) {
+        trainersById.put(id, username);
+        System.out.println("PUT TRAINEE: " + username + " with id: " + id);
+        addToTrainerList(username);
+    }
+
+    private void addToTrainerList(final String username) {
+        if (handler != null) {
+            final Message message = handler.obtainMessage(1, username);
+            handler.sendMessage(message);
         }
     }
 
     public void remove() {
 
-    }
-
-    public void setAdapter(final ArrayAdapter<String> traineeAdapter) {
-        this.traineeAdapter = traineeAdapter;
     }
 
 }

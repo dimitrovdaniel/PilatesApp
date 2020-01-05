@@ -1,16 +1,19 @@
 package com.pilates.app.ws;
 
+import android.os.Handler;
+
 import com.google.gson.Gson;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
-import com.pilates.app.SdpAdapter;
+import com.pilates.app.adapter.SdpAdapter;
 import com.pilates.app.UserRegistry;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.Candidate;
+import com.pilates.app.model.UserSession;
 
 import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
@@ -20,12 +23,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
+
 public class SignalingWebSocketAdapter extends WebSocketAdapter {
 
     private static SignalingWebSocketAdapter instance = new SignalingWebSocketAdapter();
     private final UserRegistry userRegistry = UserRegistry.getInstance();
+    private final Gson gson = new Gson();
 
     private PeerConnection peerConnection;
+    private Handler mainUIHandler;
 
     private SignalingWebSocketAdapter() { }
 
@@ -40,12 +47,6 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
         System.out.println("Connected");
-//        final ActionBody android = ActionBody.newBuilder().withName("Android").withRole(UserRole.TRAINER).build();
-//        final Action action = new Action(ActionType.REGISTER, android);
-//
-//        System.out.println("SENDING MESSAGE: " + action.toString());
-//        websocket.sendText(action.toString());
-
     }
 
     @Override
@@ -57,45 +58,42 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
     public void onTextMessage(WebSocket websocket, String text) throws Exception {
         System.out.println("RECEIVED: " + text);
 
-        Gson gson = new Gson();
         final Action action = gson.fromJson(text, Action.class);
         final ActionType type = action.getType();
         final ActionBody body = action.getBody();
 
         System.out.println("Converted: " + action.toString());
-//        JSONObject jsonObject = new JSONObject(text);
-//        final JSONObject body = jsonObject.getJSONObject("body");
-//        final String type = jsonObject.getString("type");
-
 
         if (Objects.equals(type, ActionType.ICE_EXCHANGE)) {
+
             Candidate candidate = body.getCandidate();
-            getPeerConnection().addIceCandidate(new IceCandidate(candidate.getSdpMid(), candidate.getSdpMLineIndex(), candidate.getCandidate()));
+            IceCandidate ice = new IceCandidate(candidate.getSdpMid(), candidate.getSdpMLineIndex(), candidate.getCandidate());
+            getPeerConnection().addIceCandidate(ice);
+
+            UserSession user = userRegistry.getUser();
+
+            user.addRemoteCandidate(ice);
 
         } else if (Objects.equals(type, ActionType.ANSWER)) {
-            getPeerConnection().setRemoteDescription(new SdpAdapter("localSetRemote"),
-                    new SessionDescription(SessionDescription.Type.ANSWER, body.getAnswer()));
+            SessionDescription sdp = new SessionDescription(SessionDescription.Type.ANSWER, body.getAnswer());
+            SdpAdapter instance = SdpAdapter.getInstance();
+            getPeerConnection().setRemoteDescription(instance, sdp);
+            UserSession user = userRegistry.getUser();
+            user.setAnswer(sdp);
 
-        } else if (Objects.equals(type, ActionType.TRAINEES)) {
-            final Map<String, String> trainees = body.getRegisteredUsers();
-            userRegistry.putAllTrainees(trainees);
-        } else if (Objects.equals(type, ActionType.ADD_TRAINEE)) {
+        } else if (Objects.equals(type, ActionType.TRAINERS)) {
+            final Map<String, String> trainees = body.getTrainers();
+            userRegistry.putAllTrainers(trainees);
+        } else if (Objects.equals(type, ActionType.ADD_TRAINER)) {
             final String id = body.getId();
             final String name = body.getName();
-            userRegistry.putTrainee(id, name);
+            userRegistry.putTrainer(id, name);
+        } else if (Objects.equals(type, ActionType.CALL_IN_PROGRESS)) {
+            System.out.println("CALL IN PROGRESS");
+
+            mainUIHandler.sendEmptyMessage(HANDLE_CONNECTION_ESTABLISHED);
+
         }
-//        System.out.println("AFTER MAPPING TYPE : " + type);
-//        System.out.println("AFTER MAPPING BODY : " + body);
-//        JSONObject registeredUsers = body.getJSONObject("registeredUsers");
-//        System.out.println("AFTER MAPPING USERS: " + registeredUsers);
-//
-//
-//        Iterator<String> keys = registeredUsers.keys();
-//        while (keys.hasNext()) {
-//            String next = keys.next();
-//            System.out.println("KEY: " + next);
-//            System.out.println("VALUE: " + registeredUsers.getString(next));
-//        }
 
     }
 
@@ -107,6 +105,7 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
 
 
     public void setPeerConnection(final PeerConnection peerConnection) {
+        System.out.println("SETTING NEW PEER CONNECTION");
         this.peerConnection = peerConnection;
     }
 
@@ -118,4 +117,7 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
         return this.peerConnection;
     }
 
+    public void setMainUIHandler(Handler mainUIHandler) {
+        this.mainUIHandler = mainUIHandler;
+    }
 }

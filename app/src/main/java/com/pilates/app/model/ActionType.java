@@ -13,7 +13,9 @@ public enum ActionType {
     REMOVE_TRAINEE,
     REGISTER,
     CONNECT_TO,
+    INIT_TRAINER,
     CALL_IN_PROGRESS,
-    STOP_COMMUNICATION
+    STOP_COMMUNICATION,
+    NEXT
 
 }

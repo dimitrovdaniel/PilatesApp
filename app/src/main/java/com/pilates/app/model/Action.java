@@ -1,6 +1,5 @@
 package com.pilates.app.model;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class Action {
@@ -16,6 +15,10 @@ public class Action {
     public Action(ActionType type, ActionBody body) {
         this.type = type;
         this.body = body;
+    }
+
+    public Action(ActionType type) {
+        this.type = type;
     }
 
     public Action() {

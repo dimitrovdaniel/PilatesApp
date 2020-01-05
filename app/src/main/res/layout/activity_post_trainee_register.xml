@@ -5,13 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".TraineesActivity">
+    tools:context=".PostTraineeRegisterActivity">
 
+
+    <TextView
+        android:id="@+id/traineeNameTV"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Your name: " />
 
     <ListView
-        android:id="@+id/traineesList"
+        android:id="@+id/trainersList"
         android:layout_width="match_parent"
-        android:layout_height="500dp">
+        android:layout_height="500dp"
+        android:choiceMode="singleChoice">
 
     </ListView>
 
@@ -20,5 +27,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/holo_blue_light"
-        android:text="Call"/>
+        android:layout_marginBottom="20dp"
+        android:text="Connect"/>
 </LinearLayout>

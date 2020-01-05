@@ -14,7 +14,7 @@ public class ActionBody {
     private String answer;
     private Candidate candidate;
     //wsid, name
-    private Map<String, String> registeredUsers;
+    private Map<String, String> trainers;
 
     /*default*/ ActionBody(final Builder builder) {
         this.id = builder.id;
@@ -23,7 +23,7 @@ public class ActionBody {
         this.offer = builder.offer;
         this.answer = builder.answer;
         this.candidate = builder.candidate;
-        this.registeredUsers = builder.registeredUsers;
+        this.trainers = builder.trainers;
     }
 
     public static Builder newBuilder() {
@@ -86,12 +86,12 @@ public class ActionBody {
         this.candidate = candidate;
     }
 
-    public Map<String, String> getRegisteredUsers() {
-        return registeredUsers;
+    public Map<String, String> getTrainers() {
+        return trainers;
     }
 
-    public void setRegisteredUsers(Map<String, String> registeredUsers) {
-        this.registeredUsers = registeredUsers;
+    public void setTrainers(Map<String, String> trainers) {
+        this.trainers = trainers;
     }
 
     public static final class Builder {
@@ -102,7 +102,7 @@ public class ActionBody {
         private String offer;
         private String answer;
         private Candidate candidate;
-        private Map<String, String> registeredUsers;
+        private Map<String, String> trainers;
 
         /* default */ Builder() {}
 
@@ -131,7 +131,7 @@ public class ActionBody {
             return this;
         }
         public Builder withRegisteredUsers(final Map<String, String> users) {
-            this.registeredUsers = users;
+            this.trainers = users;
             return this;
         }
 

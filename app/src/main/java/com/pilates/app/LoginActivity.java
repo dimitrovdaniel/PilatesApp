@@ -1,6 +1,8 @@
 package com.pilates.app;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
@@ -15,16 +17,19 @@ import com.pilates.app.model.UserRole;
 import com.pilates.app.model.UserSession;
 import com.pilates.app.ws.SignalingWebSocket;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 public class LoginActivity extends AppCompatActivity {
-    Button loginButton;
-    EditText username;
-    RadioGroup roleRadioGroup;
-    UserRole role;
+    private Button loginButton;
+    private EditText username;
+    private RadioGroup roleRadioGroup;
+    private UserRole role = UserRole.TRAINER;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -64,12 +69,25 @@ public class LoginActivity extends AppCompatActivity {
             final ActionBody body = ActionBody.newBuilder().withName(username).withRole(UserRole.fromString(roleText)).build();
             SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.REGISTER, body));
 
-            if (role == UserRole.TRAINEE) {
+            System.out.println("USER ROLE: " + role);
+            if (Objects.equals(role, UserRole.TRAINER)) {
                 startActivity(new Intent(this, MainActivity.class));
             } else {
-                startActivity(new Intent(this, TraineesActivity.class));
+                startActivity(new Intent(this, PostTraineeRegisterActivity.class));
             }
         });
+
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, 1);
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.RECORD_AUDIO}, 1);
+        }
+
     }
+
+
 
 }
