@@ -10,13 +10,26 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.UserRole;
 import com.pilates.app.model.UserSession;
+import com.pilates.app.model.dto.UserDto;
 import com.pilates.app.ws.SignalingWebSocket;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -31,6 +44,8 @@ public class LoginActivity extends AppCompatActivity {
     private RadioGroup roleRadioGroup;
     private UserRole role = UserRole.TRAINER;
 
+    private final Gson gson = new Gson();
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +53,8 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         CompletableFuture.runAsync(SignalingWebSocket::getInstance);
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
 
         loginButton = findViewById(R.id.submitButton);
         username = findViewById(R.id.username);
@@ -66,8 +83,37 @@ public class LoginActivity extends AppCompatActivity {
 
             UserRegistry.getInstance().saveUser(userSession);
 
+            UserDto dto = UserDto.newBuilder()
+                    .withEmail("someEmail@gmail.com")
+                    .withPassword("abcd")
+                    .withRole(UserRole.fromString(roleText))
+                    .withUsername(username).build();
+
             final ActionBody body = ActionBody.newBuilder().withName(username).withRole(UserRole.fromString(roleText)).build();
             SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.REGISTER, body));
+
+
+//            StringRequest stringRequest = new StringRequest(Request.Method.POST,
+//                    "http://192.168.99.1:8080/streaming/api/v1/user/save",
+//                    response -> System.out.println("RESPOOOOOOONSE: " + response),
+//                    error -> {
+//                        error.printStackTrace();
+//                        System.out.println("ERROR ON HTTP" + error.getMessage());
+//                    }) {
+//                @Override
+//                public String getBodyContentType() {
+//                    return "application/json; charset=utf-8";
+//                }
+//
+//                @Override
+//                public byte[] getBody() throws AuthFailureError {
+//                    String s = dto.toString();
+//                    System.out.println("SENDING REQUEST: " + s);
+//                    return s.getBytes(StandardCharsets.UTF_8);
+//                }
+//            };
+//
+//            requestQueue.add(stringRequest);
 
             System.out.println("USER ROLE: " + role);
             if (Objects.equals(role, UserRole.TRAINER)) {
@@ -79,15 +125,14 @@ public class LoginActivity extends AppCompatActivity {
 
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, 1);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.RECORD_AUDIO}, 1);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
         }
 
     }
-
 
 
 }
