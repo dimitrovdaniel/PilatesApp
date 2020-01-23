@@ -11,10 +11,8 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.pilates.app.model.Action;
-import com.pilates.app.model.ActionType;
 import com.pilates.app.model.UserSession;
-import com.pilates.app.ws.SignalingWebSocket;
+import com.pilates.app.model.dto.UserItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,12 +20,13 @@ import androidx.appcompat.app.AppCompatActivity;
 public class PostTraineeRegisterActivity extends AppCompatActivity {
 
     private final UserRegistry userRegistry = UserRegistry.getInstance();
-    private String trainerName;
+    private UserItem trainerItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_trainee_register);
+
 
         final ListView trainersList = findViewById(R.id.trainersList);
         final Button callButton = findViewById(R.id.callToTraineeButton);
@@ -37,8 +36,8 @@ public class PostTraineeRegisterActivity extends AppCompatActivity {
 
         nameTV.setText(trainerNamePrefix + userRegistry.getUser().getName());
 
-        final ArrayAdapter<String> adapter = new ArrayAdapter(this,
-                android.R.layout.simple_list_item_1, userRegistry.getTrainerNames());
+        final ArrayAdapter<UserItem> adapter = new ArrayAdapter(this,
+                android.R.layout.simple_list_item_1, userRegistry.getTrainerItems());
 
 
         userRegistry.setHandler(new Handler(Looper.getMainLooper()) {
@@ -46,7 +45,7 @@ public class PostTraineeRegisterActivity extends AppCompatActivity {
             public void handleMessage(@NonNull Message msg) {
                 System.out.println("[TRAINEE LISTENER] called pre runonuithread");
 
-                String value = (String) msg.obj;
+                UserItem value = (UserItem) msg.obj;
                 adapter.add(value);
                 adapter.notifyDataSetChanged();
                 trainersList.invalidateViews();
@@ -58,8 +57,8 @@ public class PostTraineeRegisterActivity extends AppCompatActivity {
         trainersList.setAdapter(adapter);
 
         trainersList.setOnItemClickListener((parent, view, position, id) -> {
-            trainerName = adapter.getItem(position);
-            System.out.println("Trainee name: " + trainerName);
+            trainerItem = adapter.getItem(position);
+            System.out.println("Trainee name: " + trainerItem);
 
 
             for (int i = 0; i < trainersList.getChildCount(); i++) {
@@ -73,12 +72,13 @@ public class PostTraineeRegisterActivity extends AppCompatActivity {
 
         callButton.setOnClickListener(v -> {
 
-            if (trainerName == null) {
+            if (trainerItem == null) {
                 throw new RuntimeException("No trainer name");
             }
 
             final UserSession user = UserRegistry.getInstance().getUser();
-            user.setTrainerName(trainerName);
+            user.setConnectorName(trainerItem.getName());
+            user.setConnectorId(trainerItem.getInfoId());
 
             startActivity(new Intent(this, MainActivity.class));
         });

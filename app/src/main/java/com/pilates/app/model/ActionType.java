@@ -16,6 +16,9 @@ public enum ActionType {
     INIT_TRAINER,
     CALL_IN_PROGRESS,
     STOP_COMMUNICATION,
-    NEXT
+    NEXT,
+    TRAINEE_LEAVED,
+    ON_HOLD,
+    SWITCHED
 
 }

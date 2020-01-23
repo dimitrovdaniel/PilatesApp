@@ -54,7 +54,7 @@ public class SdpAdapter implements SdpObserver {
         peerConnection.setLocalDescription(this, sessionDescription);
         final String description = sessionDescription.description;
         final UserSession user = UserRegistry.getInstance().getUser();
-        final String trainerName = user.getTrainerName();
+        final String infoId = user.getConnectorId();
 
         final ActionBody body = ActionBody.newBuilder().withOffer(description).build();
         final Action action = new Action(ActionType.OFFER, body);
@@ -66,7 +66,7 @@ public class SdpAdapter implements SdpObserver {
             SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.INIT_TRAINER));
 
         } else if (Objects.equals(role, UserRole.TRAINEE)) {
-            final ActionBody traineeBody = ActionBody.newBuilder().withName(trainerName).build();
+            final ActionBody traineeBody = ActionBody.newBuilder().withInfoId(infoId).build();
             SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.CONNECT_TO, traineeBody));
         }
     }

@@ -11,12 +11,8 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
@@ -28,7 +24,6 @@ import com.pilates.app.model.UserSession;
 import com.pilates.app.model.dto.UserDto;
 import com.pilates.app.ws.SignalingWebSocket;
 
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -79,48 +74,55 @@ public class LoginActivity extends AppCompatActivity {
             final String roleText = radioButton.getText().toString();
             final String username = this.username.getText().toString();
 
-            final UserSession userSession = new UserSession(username, role);
-
-            UserRegistry.getInstance().saveUser(userSession);
-
             UserDto dto = UserDto.newBuilder()
                     .withEmail("someEmail@gmail.com")
                     .withPassword("abcd")
                     .withRole(UserRole.fromString(roleText))
                     .withUsername(username).build();
 
-            final ActionBody body = ActionBody.newBuilder().withName(username).withRole(UserRole.fromString(roleText)).build();
-            SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.REGISTER, body));
 
 
-//            StringRequest stringRequest = new StringRequest(Request.Method.POST,
-//                    "http://192.168.99.1:8080/streaming/api/v1/user/save",
-//                    response -> System.out.println("RESPOOOOOOONSE: " + response),
-//                    error -> {
-//                        error.printStackTrace();
-//                        System.out.println("ERROR ON HTTP" + error.getMessage());
-//                    }) {
-//                @Override
-//                public String getBodyContentType() {
-//                    return "application/json; charset=utf-8";
-//                }
-//
-//                @Override
-//                public byte[] getBody() throws AuthFailureError {
-//                    String s = dto.toString();
-//                    System.out.println("SENDING REQUEST: " + s);
-//                    return s.getBytes(StandardCharsets.UTF_8);
-//                }
-//            };
-//
-//            requestQueue.add(stringRequest);
 
-            System.out.println("USER ROLE: " + role);
-            if (Objects.equals(role, UserRole.TRAINER)) {
-                startActivity(new Intent(this, MainActivity.class));
-            } else {
-                startActivity(new Intent(this, PostTraineeRegisterActivity.class));
-            }
+            StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                    "http://18.203.172.206:8080/streaming/api/v1/user/save",
+//                    "http://192.168.33.31:8080/streaming/api/v1/user/save",
+                    response -> {
+                        System.out.println("RESPOOOOOOONSE: " + response);
+
+                        final UserSession userSession = new UserSession(response, username, role);
+                        UserRegistry.getInstance().saveUser(userSession);
+
+                        final ActionBody body = ActionBody.newBuilder().withInfoId(response).withName(username).withRole(UserRole.fromString(roleText)).build();
+                        SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.REGISTER, body));
+                        runOnUiThread(() -> {
+                            System.out.println("USER ROLE: " + role);
+                            if (Objects.equals(role, UserRole.TRAINER)) {
+                                startActivity(new Intent(this, MainActivity.class));
+                            } else {
+                                startActivity(new Intent(this, PostTraineeRegisterActivity.class));
+                            }
+                        });
+                    },
+                    error -> {
+                        error.printStackTrace();
+                        System.out.println("ERROR ON HTTP" + error.getMessage());
+                    }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+                    String s = dto.toString();
+                    System.out.println("SENDING REQUEST: " + s);
+                    return s.getBytes(StandardCharsets.UTF_8);
+                }
+            };
+
+            requestQueue.add(stringRequest);
+
+
         });
 
 

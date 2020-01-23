@@ -12,7 +12,8 @@ public class SignalingWebSocket {
 
     private SignalingWebSocket() {
         try {
-            ws = factory.createSocket("ws://52.158.114.235:8080/streaming/callone");
+            ws = factory.createSocket("ws://18.203.172.206:8080/streaming/callone");
+//            ws = factory.createSocket("ws://192.168.33.31:8080/streaming/callone");
             ws.addListener(SignalingWebSocketAdapter.getInstance());
             ws = ws.connect();
         } catch (Exception e) {

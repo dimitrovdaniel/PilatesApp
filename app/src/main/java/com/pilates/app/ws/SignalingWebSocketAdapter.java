@@ -24,6 +24,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
+import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_ON_HOLD;
+import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_SWITCHED;
+import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_TRAINEE_LEAVED;
 
 public class SignalingWebSocketAdapter extends WebSocketAdapter {
 
@@ -34,7 +37,8 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
     private PeerConnection peerConnection;
     private Handler mainUIHandler;
 
-    private SignalingWebSocketAdapter() { }
+    private SignalingWebSocketAdapter() {
+    }
 
     public static SignalingWebSocketAdapter getInstance() {
         if (instance == null) {
@@ -84,15 +88,29 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
         } else if (Objects.equals(type, ActionType.TRAINERS)) {
             final Map<String, String> trainees = body.getTrainers();
             userRegistry.putAllTrainers(trainees);
+
         } else if (Objects.equals(type, ActionType.ADD_TRAINER)) {
-            final String id = body.getId();
+            final String id = body.getInfoId();
             final String name = body.getName();
             userRegistry.putTrainer(id, name);
+
         } else if (Objects.equals(type, ActionType.CALL_IN_PROGRESS)) {
-            System.out.println("CALL IN PROGRESS");
-
             mainUIHandler.sendEmptyMessage(HANDLE_CONNECTION_ESTABLISHED);
+            final String connectorId = body.getInfoId();
+            final String connectorName = body.getName();
+            final UserSession user = userRegistry.getUser();
 
+            user.setConnectorId(connectorId);
+            user.setConnectorName(connectorName);
+
+        } else if (Objects.equals(type, ActionType.TRAINEE_LEAVED)) {
+            mainUIHandler.sendEmptyMessage(HANDLE_TRAINEE_LEAVED);
+
+        } else if (Objects.equals(type, ActionType.ON_HOLD)) {
+            mainUIHandler.sendEmptyMessage(HANDLE_ON_HOLD);
+
+        } else if (Objects.equals(type, ActionType.SWITCHED)) {
+            mainUIHandler.sendEmptyMessage(HANDLE_SWITCHED);
         }
 
     }

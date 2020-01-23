@@ -8,6 +8,7 @@ import java.util.Map;
 public class ActionBody {
     //ws id
     private String id;
+    private String infoId;
     private String name;
     private UserRole role;
     private String offer;
@@ -24,6 +25,7 @@ public class ActionBody {
         this.answer = builder.answer;
         this.candidate = builder.candidate;
         this.trainers = builder.trainers;
+        this.infoId = builder.infoId;
     }
 
     public static Builder newBuilder() {
@@ -94,9 +96,18 @@ public class ActionBody {
         this.trainers = trainers;
     }
 
+    public String getInfoId() {
+        return infoId;
+    }
+
+    public void setInfoId(String infoId) {
+        this.infoId = infoId;
+    }
+
     public static final class Builder {
 
         private String id;
+        private String infoId;
         private String name;
         private UserRole role;
         private String offer;
@@ -137,6 +148,10 @@ public class ActionBody {
 
         public Builder withRole(final UserRole role) {
             this.role = role;
+            return this;
+        }
+        public Builder withInfoId(final String infoId) {
+            this.infoId = infoId;
             return this;
         }
 

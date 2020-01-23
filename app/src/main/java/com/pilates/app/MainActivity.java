@@ -7,14 +7,15 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.pilates.app.model.Action;
+import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.UserRole;
 import com.pilates.app.model.UserSession;
 import com.pilates.app.ws.SignalingWebSocket;
-import com.pilates.app.ws.SignalingWebSocketAdapter;
 
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
@@ -34,8 +35,13 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
+import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_ON_HOLD;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_REMOTE_VIDEO;
+import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_SWITCHED;
+import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_TRAINEE_LEAVED;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -58,7 +64,9 @@ public class MainActivity extends AppCompatActivity {
         localView = findViewById(R.id.svLocalView);
         remoteView = findViewById(R.id.svRemoteView);
 
-        CountDownTimer countDownTimer = new CountDownTimer(30000, 1000) {
+        final UserSession user = userRegistry.getUser();
+
+        final CountDownTimer countDownTimer = new CountDownTimer(30000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 System.out.println("TIMER: " + millisUntilFinished);
@@ -71,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
             public void onFinish() {
                 final UserSession user = userRegistry.getUser();
                 if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
-                    SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT, null));
+                    SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
                 }
                 System.out.println("TIMER FINISHED");
             }
@@ -87,6 +95,16 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(() -> remoteVideoTrack.addSink(remoteView));
                 } else if (Objects.equals(what, HANDLE_CONNECTION_ESTABLISHED)) {
                     countDownTimer.start();
+                }  else if (Objects.equals(what, HANDLE_TRAINEE_LEAVED)) {
+                    countDownTimer.cancel();
+                    timerView.setText("");
+                    SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
+                } else if (Objects.equals(what, HANDLE_ON_HOLD)) {
+                    countDownTimer.cancel();
+                    final String connectorName = user.getConnectorName();
+                    timerView.setText("On hold with: " + connectorName);
+                } else if (Objects.equals(what, HANDLE_SWITCHED)) {
+                    timerView.setText("");
                 }
             }
         };
@@ -128,6 +146,9 @@ public class MainActivity extends AppCompatActivity {
         pc.createPeerConnection(mediaStream);
 
         final Button stopButton = findViewById(R.id.stopButton);
+        final Button holdButton = findViewById(R.id.holdButton);
+        final Button nextButton = findViewById(R.id.nextButton);
+        final RelativeLayout trainerButtonsSection = findViewById(R.id.trainerButtonsSection);
 
         stopButton.setOnClickListener(v -> {
 
@@ -141,6 +162,27 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
+
+        if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
+            trainerButtonsSection.setVisibility(VISIBLE);
+
+            holdButton.setOnClickListener(listener -> {
+                holdButton.setVisibility(GONE);
+                nextButton.setVisibility(VISIBLE);
+                countDownTimer.cancel();
+                final String connectorName = user.getConnectorName();
+                final String connectorId = user.getConnectorId();
+                timerView.setText("On hold with: " + connectorName);
+                final ActionBody body = ActionBody.newBuilder().withInfoId(connectorId).build();
+                SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.ON_HOLD, body));
+            });
+
+            nextButton.setOnClickListener(listener -> {
+                nextButton.setVisibility(GONE);
+                holdButton.setVisibility(VISIBLE);
+                SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
+            });
+        }
 
     }
 
@@ -192,4 +234,5 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("STARTING CAPTURE VIDEO");
         }
     }
+
 }

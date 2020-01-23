@@ -9,15 +9,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TraineeAdapter extends BaseAdapter {
-    private final Map<String, String> traineeNamesById;
+    private final Map<String, String> traineeNamesByInfoId;
     private final Map<Integer, String> idsByIndex;
 
-    public TraineeAdapter(final Map<String, String> traineeNamesById) {
-        this.traineeNamesById = traineeNamesById;
+    public TraineeAdapter(final Map<String, String> traineeNamesByInfoId) {
+        this.traineeNamesByInfoId = traineeNamesByInfoId;
         this.idsByIndex = new HashMap<>();
 
         int index = 0;
-        for (Map.Entry<String, String> entry : traineeNamesById.entrySet()) {
+        for (Map.Entry<String, String> entry : traineeNamesByInfoId.entrySet()) {
             idsByIndex.put(index, entry.getKey());
             index++;
         }
@@ -31,13 +31,12 @@ public class TraineeAdapter extends BaseAdapter {
     @Override
     public String getItem(int position) {
         final String id = idsByIndex.get(position);
-        return traineeNamesById.get(id);
+        return traineeNamesByInfoId.get(id);
     }
 
     @Override
     public long getItemId(int position) {
-//        final String id = idsByIndex.get(position);
-
+//        return idsByIndex.get(position);
         return position;
     }
 
@@ -50,6 +49,8 @@ public class TraineeAdapter extends BaseAdapter {
 
         return convertView;
     }
+
+
 
 
 

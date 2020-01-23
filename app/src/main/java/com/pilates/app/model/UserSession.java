@@ -9,15 +9,19 @@ import java.util.List;
 
 public class UserSession {
 
+    private final String infoId;
     private final String name;
     private final UserRole role;
 
     private final List<IceCandidate> remoteCandidates = new ArrayList<>();
 
-    private String trainerName;
+    private String trainerInfoId;
+    private String connectorId;
+    private String connectorName;
     private boolean init;
     private SessionDescription answer;
-    public UserSession(final String name, final UserRole role) {
+    public UserSession(String infoId, final String name, final UserRole role) {
+        this.infoId = infoId;
         this.name = name;
         this.role = role;
     }
@@ -26,6 +30,22 @@ public class UserSession {
 
     public void addRemoteCandidate(final IceCandidate candidate) {
         remoteCandidates.add(candidate);
+    }
+
+    public String getConnectorName() {
+        return connectorName;
+    }
+
+    public void setConnectorName(String connectorName) {
+        this.connectorName = connectorName;
+    }
+
+    public String getConnectorId() {
+        return connectorId;
+    }
+
+    public void setConnectorId(String connectorId) {
+        this.connectorId = connectorId;
     }
 
     public String getName() {
@@ -60,11 +80,16 @@ public class UserSession {
 //        this.wsSession = wsSession;
 //    }
 
-    public String getTrainerName() {
-        return trainerName;
+
+    public String getInfoId() {
+        return infoId;
     }
 
-    public void setTrainerName(String trainerName) {
-        this.trainerName = trainerName;
+    public String getTrainerInfoId() {
+        return trainerInfoId;
+    }
+
+    public void setConnectorInfoId(String trainerInfoId) {
+        this.trainerInfoId = trainerInfoId;
     }
 }

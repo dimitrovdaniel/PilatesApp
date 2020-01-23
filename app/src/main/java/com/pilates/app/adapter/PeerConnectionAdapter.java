@@ -1,10 +1,10 @@
 package com.pilates.app.adapter;
 
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.pilates.app.UserRegistry;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
@@ -18,7 +18,6 @@ import org.webrtc.PeerConnection;
 import org.webrtc.RtpReceiver;
 import org.webrtc.VideoTrack;
 
-import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_REMOTE_VIDEO;
 
 /**
@@ -56,10 +55,6 @@ public class PeerConnectionAdapter implements PeerConnection.Observer {
     public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
         log("onIceConnectionChange " + iceConnectionState);
         // when ice ended CONNECTED
-//        if (PeerConnection.IceConnectionState.CONNECTED == iceConnectionState) {
-////            Message message = handler.obtainMessage(HANDLE_CONNECTION_ESTABLISHED, "some message");
-//            handler.sendEmptyMessage(HANDLE_CONNECTION_ESTABLISHED);
-//        }
     }
 
     @Override
