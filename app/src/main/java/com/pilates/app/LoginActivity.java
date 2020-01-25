@@ -27,6 +27,8 @@ import com.pilates.app.ws.SignalingWebSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,15 +41,14 @@ public class LoginActivity extends AppCompatActivity {
     private RadioGroup roleRadioGroup;
     private UserRole role = UserRole.TRAINER;
 
-    private final Gson gson = new Gson();
-
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
         CompletableFuture.runAsync(SignalingWebSocket::getInstance);
+
+
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
 
@@ -84,8 +85,8 @@ public class LoginActivity extends AppCompatActivity {
 
 
             StringRequest stringRequest = new StringRequest(Request.Method.POST,
-                    "http://18.203.172.206:8080/streaming/api/v1/user/save",
-//                    "http://192.168.33.31:8080/streaming/api/v1/user/save",
+//                    "http://18.203.172.206:8080/streaming/api/v1/user/save",  // aws signaling ip
+                    "http://192.168.33.31:8080/streaming/api/v1/user/save", // local signaling ip
                     response -> {
                         System.out.println("RESPOOOOOOONSE: " + response);
 

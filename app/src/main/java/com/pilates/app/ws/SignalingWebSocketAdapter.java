@@ -118,7 +118,7 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
 
     @Override
     public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) throws Exception {
-        System.out.println("Disconnected");
+        System.out.println("WS WS WS WS Disconnected");
     }
 
 
