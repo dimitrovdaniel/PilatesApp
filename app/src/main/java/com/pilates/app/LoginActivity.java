@@ -1,10 +1,13 @@
 package com.pilates.app;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -99,6 +102,7 @@ public class LoginActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             System.out.println("USER ROLE: " + role);
                             if (Objects.equals(role, UserRole.TRAINER)) {
+                                hideKeyboard(getActivity());
                                 startActivity(new Intent(this, MainActivity.class));
                             } else {
                                 startActivity(new Intent(this, PostTraineeRegisterActivity.class));
@@ -138,5 +142,18 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    private Activity getActivity() {
+        return this;
+    }
 
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
 }

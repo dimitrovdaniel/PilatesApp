@@ -1,12 +1,23 @@
 package com.pilates.app;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.DisplayMetrics;
+import android.view.DragEvent;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -34,6 +45,7 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -49,10 +61,13 @@ public class MainActivity extends AppCompatActivity {
     private com.pilates.app.PeerConnection pc = com.pilates.app.PeerConnection.getInstance();
     private SurfaceViewRenderer localView;
     private SurfaceViewRenderer remoteView;
-    private TextView timerView;
+    private ProgressBar pbTime;
     private MediaStream mediaStream;
     private VideoCapturer videoCapturer;
     boolean videoCaptureStopped = false;
+    private float touchStartX;
+    private float touchStartY;
+    private CountDownTimer countDownTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,19 +75,63 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         EglBase.Context eglBaseContext = EglBase.create().getEglBaseContext();
 
-        timerView = findViewById(R.id.timerView);
+        ToggleFullscreen();
+
+        pbTime = findViewById(R.id.pbTime);
         localView = findViewById(R.id.svLocalView);
         remoteView = findViewById(R.id.svRemoteView);
 
+        findViewById(R.id.frameBotTrigger).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    touchStartX = event.getX();
+                    touchStartY = event.getY();
+                }
+                else if(event.getAction() == MotionEvent.ACTION_UP && touchStartY > event.getY()) {
+                    DisplayMetrics displayMetrics = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                    int height = displayMetrics.heightPixels;
+
+                    FrameLayout fds = findViewById(R.id.frameDisplaySettings);
+                    fds.animate().y(height * 0.20f);
+                    fds.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (height * 0.90f)));
+                }
+                return true;
+            }
+        });
+
+        findViewById(R.id.frameTopTrigger).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                final UserSession user = userRegistry.getUser();
+
+                if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
+                    if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                        // hold
+                        countDownTimer.cancel();
+                        final String connectorName = user.getConnectorName();
+                        final String connectorId = user.getConnectorId();
+                        //timerView.setText("On hold with: " + connectorName);
+                        final ActionBody body = ActionBody.newBuilder().withInfoId(connectorId).build();
+                        SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.ON_HOLD, body));
+                    }
+                    else if(event.getAction() == MotionEvent.ACTION_UP) {
+                        // release
+                        SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
+                    }
+                }
+                return true;
+            }
+        });
+
         final UserSession user = userRegistry.getUser();
 
-        final CountDownTimer countDownTimer = new CountDownTimer(30000, 1000) {
+        countDownTimer = new CountDownTimer(30000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 System.out.println("TIMER: " + millisUntilFinished);
-                long seconds = millisUntilFinished / 1000;
-                String time = String.format("Remaining: %02d", seconds);
-                timerView.setText(time);
+                pbTime.setProgress((int)((millisUntilFinished / 30000) * 100));
             }
 
             @Override
@@ -97,14 +156,14 @@ public class MainActivity extends AppCompatActivity {
                     countDownTimer.start();
                 }  else if (Objects.equals(what, HANDLE_TRAINEE_LEAVED)) {
                     countDownTimer.cancel();
-                    timerView.setText("");
+                    pbTime.setProgress(0);
                     SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
                 } else if (Objects.equals(what, HANDLE_ON_HOLD)) {
                     countDownTimer.cancel();
                     final String connectorName = user.getConnectorName();
-                    timerView.setText("On hold with: " + connectorName);
+                    //timerView.setText("On hold with: " + connectorName);
                 } else if (Objects.equals(what, HANDLE_SWITCHED)) {
-                    timerView.setText("");
+                    pbTime.setProgress(0);
                 }
             }
         };
@@ -145,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
 
         pc.createPeerConnection(mediaStream);
 
-        final Button stopButton = findViewById(R.id.stopButton);
+        final ImageView stopButton = findViewById(R.id.stopButton);
         final Button holdButton = findViewById(R.id.holdButton);
         final Button nextButton = findViewById(R.id.nextButton);
         final RelativeLayout trainerButtonsSection = findViewById(R.id.trainerButtonsSection);
@@ -163,26 +222,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
+        /*if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
             trainerButtonsSection.setVisibility(VISIBLE);
 
             holdButton.setOnClickListener(listener -> {
-                holdButton.setVisibility(GONE);
-                nextButton.setVisibility(VISIBLE);
-                countDownTimer.cancel();
-                final String connectorName = user.getConnectorName();
-                final String connectorId = user.getConnectorId();
-                timerView.setText("On hold with: " + connectorName);
-                final ActionBody body = ActionBody.newBuilder().withInfoId(connectorId).build();
-                SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.ON_HOLD, body));
             });
 
             nextButton.setOnClickListener(listener -> {
                 nextButton.setVisibility(GONE);
                 holdButton.setVisibility(VISIBLE);
-                SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
             });
-        }
+        }*/
 
     }
 
@@ -233,6 +283,19 @@ public class MainActivity extends AppCompatActivity {
 
             System.out.println("STARTING CAPTURE VIDEO");
         }
+
+        ToggleFullscreen();
     }
 
+    public void ToggleFullscreen() {
+            //for new api versions.
+            View decorView = getWindow().getDecorView();
+            int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            decorView.setSystemUiVisibility(uiOptions);
+    }
 }

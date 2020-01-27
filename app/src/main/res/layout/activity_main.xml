@@ -1,90 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:wowza="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".MainActivity">
 
 
-    <!--    <FrameLayout-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="match_parent">-->
+    <FrameLayout
+        android:id="@+id/main_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <LinearLayout
-        android:layout_weight="1"
-        android:layout_height="fill_parent"
-        android:layout_width="match_parent">
-
-        <RelativeLayout
+        <FrameLayout
+            android:id="@+id/frameBotTrigger"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="100dp"
+            android:layout_gravity="bottom">
 
-            <org.webrtc.SurfaceViewRenderer
-                android:id="@+id/svLocalView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+        </FrameLayout>
 
+        <FrameLayout
+            android:id="@+id/frameTopTrigger"
+            android:layout_width="match_parent"
+            android:layout_height="600dp">
 
-            <TextView
-                android:id="@+id/timerView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Remaining: 00"
-                android:textColor="@color/colorAccent"
-                android:textSize="30sp" />
-        </RelativeLayout>
-
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_weight="1"
-        android:layout_height="fill_parent"
-        android:layout_width="match_parent">
+        </FrameLayout>
 
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/svRemoteView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-    </LinearLayout>
 
+        <org.webrtc.SurfaceViewRenderer
+            android:id="@+id/svLocalView"
+            android:layout_width="100dp"
+            android:layout_height="200dp"
+            android:layout_gravity="right"
+            android:layout_marginTop="40dp"
+            android:layout_marginRight="30dp"
+            android:background="@drawable/small_cam_view" />
 
+        <ProgressBar
+            android:id="@+id/pbTime"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="150dp"
+            android:layout_height="10dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="40dp"
+            android:max="100"
+            android:progress="80"
+            android:progressBackgroundTintMode="add"
+            android:progressDrawable="@drawable/progress_drawable"
+            android:progressTintMode="add"
+            android:scrollbarSize="2dp" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/imgWLogo"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="50dp"
+            android:adjustViewBounds="true"
+            wowza:srcCompat="@drawable/logo_small" />
 
-
-        <Button
-            android:id="@+id/stopButton"
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/txtTimeRemaining"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_weight="1"
-            android:background="@android:color/holo_red_dark"
-            android:text="STOP" />
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="50dp"
+            android:text="02:03"
+            android:textColor="#FFFFFF"
+            android:textSize="28dp"
+            android:textStyle="bold" />
 
-        <!--    </FrameLayout>-->
+        <ImageView
+            android:id="@+id/stopButton"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="100dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            wowza:srcCompat="@drawable/icon_back" />
 
         <RelativeLayout
+            android:id="@+id/trainerButtonsSection"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:visibility="gone"
-            android:id="@+id/trainerButtonsSection">
+            android:visibility="gone">
+
             <Button
                 android:id="@+id/holdButton"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="bottom"
                 android:background="@android:color/holo_blue_light"
-                android:visibility="visible"
-                android:text="HOLD" />
+                android:text="HOLD"
+                android:visibility="visible" />
 
             <Button
                 android:id="@+id/nextButton"
@@ -92,11 +109,26 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="bottom"
                 android:background="@android:color/holo_blue_dark"
-                android:visibility="gone"
-                android:text="NEXT" />
+                android:text="NEXT"
+                android:visibility="gone" />
         </RelativeLayout>
 
-    </LinearLayout>
+    </FrameLayout>
 
 
-</LinearLayout>
+    <FrameLayout
+        android:id="@+id/frameDisplaySettings"
+        android:layout_width="match_parent"
+        android:layout_height="600dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="-600dp" >
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            wowza:srcCompat="@drawable/panel_bg" />
+    </FrameLayout>
+
+</FrameLayout>
