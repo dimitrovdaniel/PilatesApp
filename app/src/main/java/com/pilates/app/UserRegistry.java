@@ -40,9 +40,9 @@ public class UserRegistry {
 
 
     public UserSession getUser() {
-        if (userSession == null) {
-            throw new RuntimeException("User session is not exist");
-        }
+//        if (userSession == null) {
+//            throw new RuntimeException("User session is not exist");
+//        }
         return userSession;
     }
 

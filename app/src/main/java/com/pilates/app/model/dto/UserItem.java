@@ -32,4 +32,9 @@ public class UserItem {
     public int hashCode() {
         return Objects.hash(name, infoId);
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

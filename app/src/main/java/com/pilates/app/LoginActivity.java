@@ -85,8 +85,9 @@ public class LoginActivity extends AppCompatActivity {
 
 
             StringRequest stringRequest = new StringRequest(Request.Method.POST,
-//                    "http://18.203.172.206:8080/streaming/api/v1/user/save",  // aws signaling ip
-                    "http://192.168.33.31:8080/streaming/api/v1/user/save", // local signaling ip
+                    "http://18.203.172.206:8080/streaming/api/v1/user/save",  // aws signaling ip
+//                    "http://192.168.33.31:8080/streaming/api/v1/user/save", // local work signaling ip
+//                    "http://192.168.100.5:8080/streaming/api/v1/user/save", // local home signaling ip
                     response -> {
                         System.out.println("RESPOOOOOOONSE: " + response);
 

@@ -24,6 +24,7 @@ public class UserSession {
         this.infoId = infoId;
         this.name = name;
         this.role = role;
+        this.init = true;
     }
 
 
@@ -60,12 +61,8 @@ public class UserSession {
         return remoteCandidates;
     }
 
-    public boolean isInit() {
-        return init;
-    }
-
-    public void setInit(boolean init) {
-        this.init = init;
+    public void  init() {
+        this.init = true;
     }
 
     public SessionDescription getAnswer() {
@@ -79,6 +76,9 @@ public class UserSession {
 //    public void setWsSession(WebSocket wsSession) {
 //        this.wsSession = wsSession;
 //    }
+    public boolean isInit() {
+        return init;
+    }
 
 
     public String getInfoId() {

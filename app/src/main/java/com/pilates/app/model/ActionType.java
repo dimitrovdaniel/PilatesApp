@@ -19,6 +19,7 @@ public enum ActionType {
     NEXT,
     TRAINEE_LEAVED,
     ON_HOLD,
-    SWITCHED
+    SWITCHED,
+    RECONNECT
 
 }

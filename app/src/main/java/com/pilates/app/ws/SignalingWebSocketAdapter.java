@@ -7,6 +7,7 @@ import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
+import com.neovisionaries.ws.client.WebSocketState;
 import com.pilates.app.adapter.SdpAdapter;
 import com.pilates.app.UserRegistry;
 import com.pilates.app.model.Action;
@@ -22,6 +23,7 @@ import org.webrtc.SessionDescription;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_ON_HOLD;
@@ -33,6 +35,7 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
     private static SignalingWebSocketAdapter instance = new SignalingWebSocketAdapter();
     private final UserRegistry userRegistry = UserRegistry.getInstance();
     private final Gson gson = new Gson();
+    private final AtomicBoolean failedConnection = new AtomicBoolean(false);
 
     private PeerConnection peerConnection;
     private Handler mainUIHandler;
@@ -133,6 +136,22 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
         }
 
         return this.peerConnection;
+    }
+
+    @Override
+    public void onStateChanged(WebSocket websocket, WebSocketState newState) throws Exception {
+        if (Objects.equals(newState, WebSocketState.CLOSED)) {
+            failedConnection.set(true);
+        } else if (Objects.equals(newState, WebSocketState.OPEN)) {
+            connectionEstablished();
+        }
+    }
+
+    public boolean isConnectionFailed() {
+        return failedConnection.get();
+    }
+    public void connectionEstablished() {
+        failedConnection.set(false);
     }
 
     public void setMainUIHandler(Handler mainUIHandler) {
