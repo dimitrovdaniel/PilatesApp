@@ -97,6 +97,19 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
             final String name = body.getName();
             userRegistry.putTrainer(id, name);
 
+        } else if (Objects.equals(type, ActionType.REMOVE_TRAINER)) {
+            final String id = body.getInfoId();
+            userRegistry.removeTrainer(id);
+
+        } else if (Objects.equals(type, ActionType.ADD_TRAINEE)) {
+            final String id = body.getId();
+            final String name = body.getName();
+            userRegistry.addTrainee(id, name);
+
+        } else if (Objects.equals(type, ActionType.REMOVE_TRAINEE)) {
+            final String id = body.getId();
+            userRegistry.removeTrainee(id);
+
         } else if (Objects.equals(type, ActionType.CALL_IN_PROGRESS)) {
             mainUIHandler.sendEmptyMessage(HANDLE_CONNECTION_ESTABLISHED);
             final String connectorId = body.getInfoId();
@@ -150,6 +163,7 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
     public boolean isConnectionFailed() {
         return failedConnection.get();
     }
+
     public void connectionEstablished() {
         failedConnection.set(false);
     }

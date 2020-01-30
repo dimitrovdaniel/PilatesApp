@@ -8,6 +8,7 @@ import com.pilates.app.model.UserSession;
 import com.pilates.app.model.dto.UserItem;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,8 @@ import androidx.annotation.RequiresApi;
 
 public class UserRegistry {
     private static UserRegistry instance = new UserRegistry();
-    private final Map<String, String> trainersById = new ConcurrentHashMap<>();
+    private final Map<String, String> trainersById = new HashMap<>();
+    private final Map<String, String> traineesById = new HashMap<>();
 
     private UserSession userSession;
     private Handler handler;
@@ -81,8 +83,20 @@ public class UserRegistry {
         }
     }
 
-    public void remove() {
+    public void removeTrainer(final String id) {
+        trainersById.remove(id);
+    }
 
+    public void addTrainee(final String id, final String username) {
+        traineesById.put(id, username);
+    }
+
+    public void removeTrainee(final String id) {
+        traineesById.remove(id);
+    }
+
+    public int getTraineeCount() {
+        return traineesById.size();
     }
 
 }
