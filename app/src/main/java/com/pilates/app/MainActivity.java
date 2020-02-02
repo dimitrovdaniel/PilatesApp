@@ -113,8 +113,8 @@ public class MainActivity extends AppCompatActivity {
                         final String connectorName = user.getConnectorName();
                         final String connectorId = user.getConnectorId();
                         //timerView.setText("On hold with: " + connectorName);
-                        final ActionBody body = ActionBody.newBuilder().withInfoId(connectorId).build();
-                        SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.ON_HOLD, body));
+//                        final ActionBody body = ActionBody.newBuilder().withInfoId(connectorId).build();
+//                        SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.ON_HOLD, body));
                     }
                     else if(event.getAction() == MotionEvent.ACTION_UP) {
                         // release

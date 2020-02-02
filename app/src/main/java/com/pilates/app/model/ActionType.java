@@ -11,7 +11,7 @@ public enum ActionType {
     REMOVE_TRAINER,
     ADD_TRAINEE,
     REMOVE_TRAINEE,
-    REGISTER,
+    CONNECT,
     CONNECT_TO,
     INIT_TRAINER,
     CALL_IN_PROGRESS,
@@ -19,7 +19,6 @@ public enum ActionType {
     NEXT,
     TRAINEE_LEAVED,
     ON_HOLD,
-    SWITCHED,
-    RECONNECT
+    SWITCHED
 
 }

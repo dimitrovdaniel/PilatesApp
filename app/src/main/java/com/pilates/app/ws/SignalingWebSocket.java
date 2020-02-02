@@ -2,7 +2,6 @@ package com.pilates.app.ws;
 
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketFactory;
-import com.neovisionaries.ws.client.WebSocketListener;
 import com.neovisionaries.ws.client.WebSocketState;
 import com.pilates.app.UserRegistry;
 import com.pilates.app.model.Action;
@@ -10,7 +9,6 @@ import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.UserSession;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -52,7 +50,7 @@ public class SignalingWebSocket {
             if (Objects.nonNull(user) && user.isInit()) {
                 final String infoId = user.getInfoId();
                 final ActionBody body = ActionBody.newBuilder().withInfoId(infoId).build();
-                sendMessage(new Action(ActionType.RECONNECT, body));
+                sendMessage(new Action(ActionType.CONNECT, body));
             }
         } catch (Exception e) {
             System.out.println("Could not establish web socket connection: " + e.getMessage());

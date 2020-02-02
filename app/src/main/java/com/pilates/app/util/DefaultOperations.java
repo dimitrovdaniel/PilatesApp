@@ -13,7 +13,6 @@ import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.UserRole;
 import com.pilates.app.model.UserSession;
-import com.pilates.app.model.dto.UserDto;
 import com.pilates.app.ws.SignalingWebSocket;
 
 import java.util.Objects;
@@ -26,7 +25,7 @@ public class DefaultOperations {
                 .withInfoId(user.getInfoId())
                 .withName(user.getName())
                 .withRole(user.getRole()).build();
-        SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.REGISTER, body));
+        SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.CONNECT, body));
 
         activity.runOnUiThread(() -> {
             System.out.println("USER ROLE: " + user.getRole());
