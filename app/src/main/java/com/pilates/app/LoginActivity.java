@@ -1,45 +1,50 @@
 package com.pilates.app;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.pilates.app.model.Action;
-import com.pilates.app.model.ActionBody;
-import com.pilates.app.model.ActionType;
-import com.pilates.app.model.UserRole;
-import com.pilates.app.model.UserSession;
-import com.pilates.app.model.dto.UserDto;
-import com.pilates.app.ws.SignalingWebSocket;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-public class LoginActivity extends AppCompatActivity {
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.pilates.app.model.HttpRequest;
+import com.pilates.app.model.UserSession;
+import com.pilates.app.model.dto.UserDto;
+import com.pilates.app.model.dto.UserInfoDto;
+import com.pilates.app.util.DefaultOperations;
+import com.pilates.app.ws.SignalingWebSocket;
+
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+
+public class LoginActivity extends AppCompatActivity implements
+        AdapterView.OnClickListener,
+        Response.Listener<String>, Response.ErrorListener {
+    private final UserRegistry registry = UserRegistry.getInstance();
+    private final Gson jsonConverter = new Gson();
+    private RequestQueue requestQueue;
+    private UserDto dto;
+
     private Button loginButton;
-    private EditText username;
-    private RadioGroup roleRadioGroup;
-    private UserRole role = UserRole.TRAINER;
+    private EditText etEmail;
+    private EditText etPassword;
+    private TextView tvSignUp;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -48,85 +53,16 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         CompletableFuture.runAsync(SignalingWebSocket::getInstance);
 
+        requestQueue = Volley.newRequestQueue(this);
+        loginButton = findViewById(R.id.loginBtn);
+        etEmail = findViewById(R.id.email);
+        etPassword = findViewById(R.id.password);
+        tvSignUp = findViewById(R.id.sign_up);
+
+        tvSignUp.setOnClickListener(v -> startActivity(new Intent(this, RegistrationActivity.class)));
 
 
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-
-        loginButton = findViewById(R.id.submitButton);
-        username = findViewById(R.id.username);
-        roleRadioGroup = findViewById(R.id.role_radio_group);
-
-        roleRadioGroup.setOnCheckedChangeListener((radioGroup, id) -> {
-            if (id == R.id.radioButtonTrainee) {
-                role = UserRole.TRAINEE;
-                final RadioButton radioButtonTrainer = findViewById(R.id.radioButtonTrainer);
-                radioButtonTrainer.setChecked(false);
-            } else {
-                role = UserRole.TRAINER;
-                final RadioButton radioButtonTrainee = findViewById(R.id.radioButtonTrainee);
-                radioButtonTrainee.setChecked(false);
-            }
-        });
-
-
-        loginButton.setOnClickListener(view -> {
-            final int checkedRadioButtonId = roleRadioGroup.getCheckedRadioButtonId();
-            final RadioButton radioButton = findViewById(checkedRadioButtonId);
-            final String roleText = radioButton.getText().toString();
-            final String username = this.username.getText().toString();
-
-            UserDto dto = UserDto.newBuilder()
-                    .withEmail("someEmail@gmail.com")
-                    .withPassword("abcd")
-                    .withRole(UserRole.fromString(roleText))
-                    .withUsername(username).build();
-
-
-
-
-            StringRequest stringRequest = new StringRequest(Request.Method.POST,
-                    "http://18.203.172.206:8080/streaming/api/v1/user/save",  // aws signaling ip
-//                    "http://192.168.33.31:8080/streaming/api/v1/user/save", // local work signaling ip
-//                    "http://192.168.100.5:8080/streaming/api/v1/user/save", // local home signaling ip
-                    response -> {
-                        System.out.println("RESPOOOOOOONSE: " + response);
-
-                        final UserSession userSession = new UserSession(response, username, role);
-                        UserRegistry.getInstance().saveUser(userSession);
-
-                        final ActionBody body = ActionBody.newBuilder().withInfoId(response).withName(username).withRole(UserRole.fromString(roleText)).build();
-                        SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.REGISTER, body));
-                        runOnUiThread(() -> {
-                            System.out.println("USER ROLE: " + role);
-                            if (Objects.equals(role, UserRole.TRAINER)) {
-                                hideKeyboard(getActivity());
-                                startActivity(new Intent(this, MainActivity.class));
-                            } else {
-                                startActivity(new Intent(this, PostTraineeRegisterActivity.class));
-                            }
-                        });
-                    },
-                    error -> {
-                        error.printStackTrace();
-                        System.out.println("ERROR ON HTTP" + error.getMessage());
-                    }) {
-                @Override
-                public String getBodyContentType() {
-                    return "application/json; charset=utf-8";
-                }
-
-                @Override
-                public byte[] getBody() throws AuthFailureError {
-                    String s = dto.toString();
-                    System.out.println("SENDING REQUEST: " + s);
-                    return s.getBytes(StandardCharsets.UTF_8);
-                }
-            };
-
-            requestQueue.add(stringRequest);
-
-
-        });
+        loginButton.setOnClickListener(this);
 
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -139,18 +75,58 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private Activity getActivity() {
-        return this;
+    private boolean validate(final String email, final String password) {
+        if (Objects.isNull(email) || Objects.equals(email, "")) {
+            Toast.makeText(LoginActivity.this, "Email required", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (Objects.isNull(password) || Objects.equals(password, "")) {
+            Toast.makeText(LoginActivity.this, "Password required", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
     }
 
-    public static void hideKeyboard(Activity activity) {
-        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-        //Find the currently focused view, so we can grab the correct window token from it.
-        View view = activity.getCurrentFocus();
-        //If no view currently has focus, create a new one, just so we can grab a window token from it
-        if (view == null) {
-            view = new View(activity);
+    @Override
+    public void onClick(View v) {
+
+        final String email = this.etEmail.getText().toString();
+        final String password = this.etPassword.getText().toString();
+
+        if (validate(email, password)) {
+
+            dto = UserDto.newBuilder()
+                    .withEmail(email)
+                    .withPassword(password)
+                    .build();
+
+            registry.saveDto(dto);
+
+//            "http://18.203.172.206:8081/provider/api/v1/user/login",  // aws signaling ip
+//            "http://192.168.33.31:8081/provider/api/v1/user/login", // local work signaling ip
+//            "http://192.168.100.5:8081/provider/api/v1/user/login", // local home signaling ip
+//            "http://192.168.99.1:8081/provider/api/v1/user/login", // local home signaling ip
+
+            HttpRequest httpRequest = new HttpRequest(Request.Method.POST,
+                    "http://18.203.172.206:8081/provider/api/v1/user/login",
+                    this, this, dto);
+
+            requestQueue.add(httpRequest);
         }
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    @Override
+    public void onErrorResponse(VolleyError error) {
+        error.printStackTrace();
+        System.out.println("ERROR WHILE LOGIN" + error.getMessage());
+    }
+
+    @Override
+    public void onResponse(final String infoString) {
+        final UserInfoDto infoDto = jsonConverter.fromJson(infoString, UserInfoDto.class);
+        final UserSession userSession = new UserSession(infoDto.getId(), infoDto.getName(), infoDto.getRole());
+        registry.saveUser(userSession);
+        DefaultOperations.loginRegisterFlow(this);
     }
 }

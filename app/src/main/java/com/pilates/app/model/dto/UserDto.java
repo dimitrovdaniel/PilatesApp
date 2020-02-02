@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.pilates.app.model.UserRole;
 
 
-public class UserDto {
+public class UserDto implements Request {
 
     private String username;
     private String email;
@@ -22,6 +22,23 @@ public class UserDto {
     public static Builder newBuilder() {
         return new Builder();
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
     @Override
     public String toString() {
         return new GsonBuilder().create().toJson(this, UserDto.class);

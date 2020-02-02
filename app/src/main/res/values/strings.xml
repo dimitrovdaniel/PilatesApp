@@ -2,4 +2,12 @@
     <string name="app_name">PilatesApp</string>
     <string name="Trainee">Trainee</string>
     <string name="Trainer">Trainer</string>
+
+    <string-array name="spinner_role_items">
+
+        <item>Trainer</item>
+        <item>Trainee</item>
+    </string-array>
+
+
 </resources>

@@ -20,12 +20,14 @@ public class UserSession {
     private String connectorName;
     private boolean init;
     private SessionDescription answer;
-    public UserSession(String infoId, final String name, final UserRole role) {
+
+    public UserSession(final String infoId, final String name, final UserRole role) {
         this.infoId = infoId;
         this.name = name;
         this.role = role;
         this.init = true;
     }
+
 
 
 

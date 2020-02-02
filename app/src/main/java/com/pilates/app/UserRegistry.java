@@ -4,18 +4,16 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 
+import androidx.annotation.RequiresApi;
+
 import com.pilates.app.model.UserSession;
+import com.pilates.app.model.dto.UserDto;
 import com.pilates.app.model.dto.UserItem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import androidx.annotation.RequiresApi;
 
 
 public class UserRegistry {
@@ -24,6 +22,7 @@ public class UserRegistry {
     private final Map<String, String> traineesById = new HashMap<>();
 
     private UserSession userSession;
+    private UserDto dto;
     private Handler handler;
 
     private UserRegistry() {
@@ -40,11 +39,16 @@ public class UserRegistry {
         this.userSession = userSession;
     }
 
+    public void saveDto(final UserDto dto) {
+        this.dto = dto;
+    }
+
+    public UserDto getDto() {
+        return dto;
+    }
+
 
     public UserSession getUser() {
-//        if (userSession == null) {
-//            throw new RuntimeException("User session is not exist");
-//        }
         return userSession;
     }
 
