@@ -91,13 +91,13 @@ public class RegistrationActivity extends AppCompatActivity implements AdapterVi
 
         registry.saveDto(dto);
 
-//        "http://18.203.172.206:8080/streaming/api/v1/user/save",  // aws signaling ip
-//        "http://192.168.33.31:8080/streaming/api/v1/user/save", // local work signaling ip
+//        "http://52.211.65.199:8080/provider/api/v1/user/register",  // aws provider ip
+//        "http://192.168.33.31:8080/provider/api/v1/user/register", // local work signaling ip
 //        "http://192.168.100.5:8081/provider/api/v1/user/register", // local home signaling ip
 //        "http://192.168.99.1:8081/provider/api/v1/user/register", // local home signaling ip
 
         final HttpRequest httpRequest = new HttpRequest(Request.Method.POST,
-                "http://18.203.172.206:8081/provider/api/v1/user/register",
+                "http://52.211.65.199:8081/provider/api/v1/user/register",
                 this, this, dto);
 
         requestQueue.add(httpRequest);
