@@ -16,6 +16,7 @@ import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.Candidate;
+import com.pilates.app.model.ClassInitData;
 import com.pilates.app.model.UserSession;
 
 import org.webrtc.IceCandidate;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import androidx.annotation.RequiresApi;
 
+import static com.pilates.app.util.Constant.HandlerMessage.CLASS_INITIALIZED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_ON_HOLD;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_SWITCHED;
@@ -101,7 +103,14 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
         } else if (Objects.equals(type, ActionType.INITIALIZED)) {
             final LocalDateTime startTime = body.getStartTime();
             final LocalDateTime endTime = body.getEndTime();
+            final LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 
+            ClassInitData data = new ClassInitData();
+            data.currentSeconds = Duration.between(now, endTime).get(ChronoUnit.SECONDS);
+            data.totalSeconds = Duration.between(startTime, endTime).get(ChronoUnit.SECONDS);
+
+            final Message message = mainUIHandler.obtainMessage(CLASS_INITIALIZED, data);
+            mainUIHandler.sendMessage(message);
         } else if (Objects.equals(type, ActionType.TRAINERS)) {
             final Map<String, String> trainees = body.getTrainers();
             userRegistry.putAllTrainers(trainees);

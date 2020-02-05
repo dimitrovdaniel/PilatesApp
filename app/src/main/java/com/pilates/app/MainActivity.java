@@ -5,19 +5,20 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import com.pilates.app.controls.SlidingPanel;
+import com.pilates.app.controls.listeners.OnSlidingPanelEventListener;
 import com.pilates.app.handler.Timer;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionType;
+import com.pilates.app.model.ClassInitData;
 import com.pilates.app.model.UserRole;
 import com.pilates.app.model.UserSession;
 import com.pilates.app.ws.SignalingWebSocket;
@@ -40,6 +41,7 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import static com.pilates.app.util.Constant.HandlerMessage.CLASS_INITIALIZED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_ON_HOLD;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_REMOTE_VIDEO;
@@ -60,6 +62,11 @@ public class MainActivity extends AppCompatActivity {
     private float touchStartY;
 
     private Timer timer;
+    private Timer sessionTimer;
+
+    private SlidingPanel slidingPanel;
+    private ProgressBar pbTimeCurrent;
+    private TextView txtTimeRemaining;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +76,19 @@ public class MainActivity extends AppCompatActivity {
 
         ToggleFullscreen();
 
-        pbTime = findViewById(R.id.pbTime);
+        pbTime = findViewById(R.id.pbTimeSession);
+        pbTimeCurrent = findViewById(R.id.pbTimeCurrent);
         localView = findViewById(R.id.svLocalView);
         remoteView = findViewById(R.id.svRemoteView);
+        slidingPanel = findViewById(R.id.frameDisplaySettings);
+        txtTimeRemaining = findViewById(R.id.txtTimeRemaining);
+
+        slidingPanel.setListener(new OnSlidingPanelEventListener() {
+            @Override
+            public void changeLayout(String tag) {
+
+            }
+        });
 
         findViewById(R.id.frameBotTrigger).setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -80,13 +97,7 @@ public class MainActivity extends AppCompatActivity {
                     touchStartX = event.getX();
                     touchStartY = event.getY();
                 } else if (event.getAction() == MotionEvent.ACTION_UP && touchStartY > event.getY()) {
-                    DisplayMetrics displayMetrics = new DisplayMetrics();
-                    getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-                    int height = displayMetrics.heightPixels;
-
-                    FrameLayout fds = findViewById(R.id.frameDisplaySettings);
-                    fds.animate().y(height * 0.20f);
-                    fds.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (height * 0.90f)));
+                    slidingPanel.showPanel();
                 }
                 return true;
             }
@@ -117,8 +128,8 @@ public class MainActivity extends AppCompatActivity {
 
         final UserSession user = userRegistry.getUser();
 
-        timer = new Timer(pbTime);
-
+        timer = new Timer(pbTimeCurrent);
+        sessionTimer = new Timer(pbTime, txtTimeRemaining);
 
         final Handler handler = new Handler(Looper.getMainLooper()) {
             @Override
@@ -132,14 +143,24 @@ public class MainActivity extends AppCompatActivity {
                     timer.start(remainingTime, 1000);
                 } else if (Objects.equals(what, HANDLE_TRAINEE_LEAVED)) {
                     timer.stop();
-                    pbTime.setProgress(0);
+                    pbTimeCurrent.setProgress(0);
                     SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
                 } else if (Objects.equals(what, HANDLE_ON_HOLD)) {
                     timer.stop();
                     final String connectorName = user.getConnectorName();
                     //timerView.setText("On hold with: " + connectorName);
                 } else if (Objects.equals(what, HANDLE_SWITCHED)) {
-                    pbTime.setProgress(0);
+                    pbTimeCurrent.setProgress(0);
+                } else if (Objects.equals(what, CLASS_INITIALIZED)) {
+                    ClassInitData classData = (ClassInitData)msg.obj;
+
+                    int mins = (int)((classData.totalSeconds - classData.currentSeconds) / 60);
+                    int secondsToMin = (int)(classData.totalSeconds - classData.currentSeconds) - (mins * 60);
+
+                    txtTimeRemaining.setText(String.format("00", mins) + ":" + String.format("00", secondsToMin));
+                    pbTime.setProgress((int)((classData.currentSeconds / (double)classData.totalSeconds) * 100));
+
+                    sessionTimer.start((classData.totalSeconds - classData.currentSeconds) * 1000, 1000);
                 }
             }
         };

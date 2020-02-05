@@ -9,6 +9,7 @@ public final class Constant {
         public static final int HANDLE_TRAINEE_LEAVED = 4;
         public static final int HANDLE_ON_HOLD = 5;
         public static final int HANDLE_SWITCHED = 6;
+        public static final int CLASS_INITIALIZED = 7;
 
     }
 
