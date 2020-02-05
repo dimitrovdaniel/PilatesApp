@@ -55,10 +55,11 @@ public class Timer {
         @Override
         public void onFinish() {
             final UserSession user = UserRegistry.getInstance().getUser();
+            System.out.println("TIMER FINISHED");
             if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
                 SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
             }
-            System.out.println("TIMER FINISHED");
+
         }
     }
 }
