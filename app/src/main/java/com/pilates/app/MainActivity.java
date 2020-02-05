@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
         stopButton.setOnClickListener(v -> {
 
             UserRole role = userRegistry.getUser().getRole();
-            SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.STOP_COMMUNICATION, null));
+            SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.STOP_COMMUNICATION));
             if (role == UserRole.TRAINEE) {
                 startActivity(new Intent(this, PostTraineeRegisterActivity.class));
             } else {

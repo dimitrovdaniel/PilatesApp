@@ -158,6 +158,9 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
 
         } else if (Objects.equals(type, ActionType.SWITCHED)) {
             mainUIHandler.sendEmptyMessage(HANDLE_SWITCHED);
+
+        } else if (Objects.equals(type, ActionType.PING)) {
+            SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.PONG, LocalDateTime.now(ZoneOffset.UTC)));
         }
 
     }
