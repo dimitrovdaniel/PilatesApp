@@ -2,6 +2,7 @@ package com.pilates.app.model;
 
 import com.google.gson.GsonBuilder;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 
@@ -14,6 +15,8 @@ public class ActionBody {
     private String offer;
     private String answer;
     private Candidate candidate;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     //wsid, name
     private Map<String, String> trainers;
 
@@ -26,12 +29,13 @@ public class ActionBody {
         this.candidate = builder.candidate;
         this.trainers = builder.trainers;
         this.infoId = builder.infoId;
+        this.startTime = builder.startTime;
+        this.endTime = builder.endTime;
     }
 
     public static Builder newBuilder() {
         return new Builder();
     }
-
 
 
     @Override
@@ -104,6 +108,22 @@ public class ActionBody {
         this.infoId = infoId;
     }
 
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
     public static final class Builder {
 
         private String id;
@@ -113,9 +133,12 @@ public class ActionBody {
         private String offer;
         private String answer;
         private Candidate candidate;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
         private Map<String, String> trainers;
 
-        /* default */ Builder() {}
+        /* default */ Builder() {
+        }
 
         public Builder withId(final String id) {
             this.id = id;
@@ -141,8 +164,19 @@ public class ActionBody {
             this.candidate = candidate;
             return this;
         }
+
         public Builder withRegisteredUsers(final Map<String, String> users) {
             this.trainers = users;
+            return this;
+        }
+
+        public Builder withStartTime(final LocalDateTime startTime) {
+            this.startTime = startTime;
+            return this;
+        }
+
+        public Builder withEndTime(final LocalDateTime endTimeTime) {
+            this.endTime = endTimeTime;
             return this;
         }
 
@@ -150,6 +184,7 @@ public class ActionBody {
             this.role = role;
             return this;
         }
+
         public Builder withInfoId(final String infoId) {
             this.infoId = infoId;
             return this;

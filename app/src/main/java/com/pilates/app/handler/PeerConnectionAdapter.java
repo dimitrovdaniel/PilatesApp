@@ -1,10 +1,9 @@
-package com.pilates.app.adapter;
+package com.pilates.app.handler;
 
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.pilates.app.UserRegistry;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;

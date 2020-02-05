@@ -1,28 +1,22 @@
 package com.pilates.app;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.DisplayMetrics;
-import android.view.DragEvent;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
+import com.pilates.app.handler.Timer;
 import com.pilates.app.model.Action;
-import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.UserRole;
 import com.pilates.app.model.UserSession;
@@ -45,10 +39,7 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
-import static android.view.View.GONE;
-import static android.view.View.VISIBLE;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_ON_HOLD;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_REMOTE_VIDEO;
@@ -67,7 +58,8 @@ public class MainActivity extends AppCompatActivity {
     boolean videoCaptureStopped = false;
     private float touchStartX;
     private float touchStartY;
-    private CountDownTimer countDownTimer;
+
+    private Timer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,11 +76,10 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.frameBotTrigger).setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     touchStartX = event.getX();
                     touchStartY = event.getY();
-                }
-                else if(event.getAction() == MotionEvent.ACTION_UP && touchStartY > event.getY()) {
+                } else if (event.getAction() == MotionEvent.ACTION_UP && touchStartY > event.getY()) {
                     DisplayMetrics displayMetrics = new DisplayMetrics();
                     getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
                     int height = displayMetrics.heightPixels;
@@ -107,16 +98,15 @@ public class MainActivity extends AppCompatActivity {
                 final UserSession user = userRegistry.getUser();
 
                 if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
-                    if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         // hold
-                        countDownTimer.cancel();
+                        timer.stop();
                         final String connectorName = user.getConnectorName();
                         final String connectorId = user.getConnectorId();
                         //timerView.setText("On hold with: " + connectorName);
 //                        final ActionBody body = ActionBody.newBuilder().withInfoId(connectorId).build();
 //                        SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.ON_HOLD, body));
-                    }
-                    else if(event.getAction() == MotionEvent.ACTION_UP) {
+                    } else if (event.getAction() == MotionEvent.ACTION_UP) {
                         // release
                         SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
                     }
@@ -127,22 +117,7 @@ public class MainActivity extends AppCompatActivity {
 
         final UserSession user = userRegistry.getUser();
 
-        countDownTimer = new CountDownTimer(30000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                System.out.println("TIMER: " + millisUntilFinished);
-                pbTime.setProgress((int)((millisUntilFinished / 30000) * 100));
-            }
-
-            @Override
-            public void onFinish() {
-                final UserSession user = userRegistry.getUser();
-                if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
-                    SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
-                }
-                System.out.println("TIMER FINISHED");
-            }
-        };
+        timer = new Timer(pbTime);
 
 
         final Handler handler = new Handler(Looper.getMainLooper()) {
@@ -153,13 +128,14 @@ public class MainActivity extends AppCompatActivity {
                     VideoTrack remoteVideoTrack = (VideoTrack) msg.obj;
                     runOnUiThread(() -> remoteVideoTrack.addSink(remoteView));
                 } else if (Objects.equals(what, HANDLE_CONNECTION_ESTABLISHED)) {
-                    countDownTimer.start();
-                }  else if (Objects.equals(what, HANDLE_TRAINEE_LEAVED)) {
-                    countDownTimer.cancel();
+                    long remainingTime = (long) msg.obj;
+                    timer.start(remainingTime, 1000);
+                } else if (Objects.equals(what, HANDLE_TRAINEE_LEAVED)) {
+                    timer.stop();
                     pbTime.setProgress(0);
                     SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
                 } else if (Objects.equals(what, HANDLE_ON_HOLD)) {
-                    countDownTimer.cancel();
+                    timer.stop();
                     final String connectorName = user.getConnectorName();
                     //timerView.setText("On hold with: " + connectorName);
                 } else if (Objects.equals(what, HANDLE_SWITCHED)) {
@@ -288,14 +264,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void ToggleFullscreen() {
-            //for new api versions.
-            View decorView = getWindow().getDecorView();
-            int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            decorView.setSystemUiVisibility(uiOptions);
+        //for new api versions.
+        View decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                | View.SYSTEM_UI_FLAG_IMMERSIVE
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        decorView.setSystemUiVisibility(uiOptions);
     }
 }

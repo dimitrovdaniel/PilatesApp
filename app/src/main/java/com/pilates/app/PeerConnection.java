@@ -3,8 +3,8 @@ package com.pilates.app;
 import android.content.Context;
 import android.os.Handler;
 
-import com.pilates.app.adapter.PeerConnectionAdapter;
-import com.pilates.app.adapter.SdpAdapter;
+import com.pilates.app.handler.PeerConnectionAdapter;
+import com.pilates.app.handler.SdpAdapter;
 import com.pilates.app.ws.SignalingWebSocketAdapter;
 
 import org.webrtc.DefaultVideoDecoderFactory;

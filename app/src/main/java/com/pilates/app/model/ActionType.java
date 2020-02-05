@@ -14,6 +14,7 @@ public enum ActionType {
     CONNECT,
     CONNECT_TO,
     INIT_TRAINER,
+    INITIALIZED,
     CALL_IN_PROGRESS,
     STOP_COMMUNICATION,
     NEXT,

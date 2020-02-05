@@ -1,6 +1,8 @@
 package com.pilates.app.ws;
 
+import android.os.Build;
 import android.os.Handler;
+import android.os.Message;
 
 import com.google.gson.Gson;
 import com.neovisionaries.ws.client.WebSocket;
@@ -8,7 +10,7 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
 import com.neovisionaries.ws.client.WebSocketState;
-import com.pilates.app.adapter.SdpAdapter;
+import com.pilates.app.handler.SdpAdapter;
 import com.pilates.app.UserRegistry;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionBody;
@@ -20,10 +22,17 @@ import org.webrtc.IceCandidate;
 import org.webrtc.PeerConnection;
 import org.webrtc.SessionDescription;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import androidx.annotation.RequiresApi;
 
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_ON_HOLD;
@@ -61,6 +70,7 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
         System.out.println("Connection error");
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onTextMessage(WebSocket websocket, String text) throws Exception {
         System.out.println("RECEIVED: " + text);
@@ -88,6 +98,10 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
             UserSession user = userRegistry.getUser();
             user.setAnswer(sdp);
 
+        } else if (Objects.equals(type, ActionType.INITIALIZED)) {
+            final LocalDateTime startTime = body.getStartTime();
+            final LocalDateTime endTime = body.getEndTime();
+
         } else if (Objects.equals(type, ActionType.TRAINERS)) {
             final Map<String, String> trainees = body.getTrainers();
             userRegistry.putAllTrainers(trainees);
@@ -111,13 +125,21 @@ public class SignalingWebSocketAdapter extends WebSocketAdapter {
             userRegistry.removeTrainee(id);
 
         } else if (Objects.equals(type, ActionType.CALL_IN_PROGRESS)) {
-            mainUIHandler.sendEmptyMessage(HANDLE_CONNECTION_ESTABLISHED);
+
             final String connectorId = body.getInfoId();
             final String connectorName = body.getName();
             final UserSession user = userRegistry.getUser();
 
+            final LocalDateTime startTime = body.getStartTime();
+            final LocalDateTime endTime = body.getEndTime();
+
+            final LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+            final Message message = mainUIHandler.obtainMessage(HANDLE_CONNECTION_ESTABLISHED, Duration.between(now, endTime).get(ChronoUnit.MILLIS));
+
             user.setConnectorId(connectorId);
             user.setConnectorName(connectorName);
+
+            mainUIHandler.sendMessage(message);
 
         } else if (Objects.equals(type, ActionType.TRAINEE_LEAVED)) {
             mainUIHandler.sendEmptyMessage(HANDLE_TRAINEE_LEAVED);
