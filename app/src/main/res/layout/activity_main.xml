@@ -16,15 +16,19 @@
         <FrameLayout
             android:id="@+id/frameBotTrigger"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_gravity="bottom">
+            android:layout_height="200dp"
+            android:layout_gravity="bottom"
+            android:clickable="true"
+            android:focusableInTouchMode="true">
 
         </FrameLayout>
 
         <FrameLayout
             android:id="@+id/frameTopTrigger"
             android:layout_width="match_parent"
-            android:layout_height="600dp">
+            android:layout_height="600dp"
+            android:clickable="true"
+            android:focusableInTouchMode="true">
 
         </FrameLayout>
 
@@ -44,12 +48,27 @@
             android:background="@drawable/small_cam_view" />
 
         <ProgressBar
-            android:id="@+id/pbTime"
+            android:id="@+id/pbTimeSession"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="150dp"
             android:layout_height="10dp"
             android:layout_marginLeft="30dp"
             android:layout_marginTop="40dp"
+            android:max="100"
+            android:progress="80"
+            android:progressBackgroundTintMode="add"
+            android:progressDrawable="@drawable/progress_drawable"
+            android:progressTintMode="add"
+            android:scrollbarSize="2dp" />
+
+        <ProgressBar
+            android:id="@+id/pbTimeCurrent"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="150dp"
+            android:layout_height="10dp"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="30dp"
+            android:layout_marginBottom="40dp"
             android:max="100"
             android:progress="80"
             android:progressBackgroundTintMode="add"
@@ -116,19 +135,13 @@
     </FrameLayout>
 
 
-    <FrameLayout
+    <com.pilates.app.controls.SlidingPanel
         android:id="@+id/frameDisplaySettings"
         android:layout_width="match_parent"
-        android:layout_height="600dp"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="-600dp" >
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom">
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitXY"
-            wowza:srcCompat="@drawable/panel_bg" />
-    </FrameLayout>
+
+    </com.pilates.app.controls.SlidingPanel>
 
 </FrameLayout>

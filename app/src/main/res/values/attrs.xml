@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="IconButton">
+        <attr name="iconInactive" format="integer" />
+        <attr name="iconActive" format="integer" />
+        <attr name="labelText" format="string" />
+        <attr name="dataTag" format="string" />
+    </declare-styleable>
+
+</resources>

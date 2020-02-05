@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    xmlns:wowza="http://schemas.android.com/apk/res-auto">
+    <ImageView
+        android:id="@+id/imgPanelBG"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        wowza:srcCompat="@drawable/panel_bg" />
+
+    <FrameLayout
+        android:id="@+id/frameScreenLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginRight="20dp">
+
+        <ImageView
+            android:id="@+id/imgPanelSubBg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            wowza:srcCompat="@drawable/panel_group_bg" />
+
+        <TextView
+            android:id="@+id/tvSLTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:text="Screen Layout"
+            android:textColor="#4d5963"
+            android:textSize="16dp"
+            android:textStyle="bold" />
+
+        <com.pilates.app.controls.IconButtonGroup
+            android:id="@+id/ibgLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="20dp"
+            android:orientation="horizontal">
+
+            <com.pilates.app.controls.IconButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                wowza:dataTag="me_small"
+                wowza:iconActive="@drawable/btn_me_small_active"
+                wowza:iconInactive="@drawable/btn_me_small"
+                wowza:labelText="Me small"></com.pilates.app.controls.IconButton>
+
+            <com.pilates.app.controls.IconButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                wowza:dataTag="split"
+                wowza:iconActive="@drawable/btn_split_active"
+                wowza:iconInactive="@drawable/btn_split"
+                wowza:labelText="Split"></com.pilates.app.controls.IconButton>
+
+            <com.pilates.app.controls.IconButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                wowza:dataTag="me_large"
+                wowza:iconActive="@drawable/btn_me_large_active"
+                wowza:iconInactive="@drawable/btn_me_large"
+                wowza:labelText="Me Large"></com.pilates.app.controls.IconButton>
+
+            <com.pilates.app.controls.IconButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                wowza:dataTag="me_hidden"
+                wowza:iconActive="@drawable/btn_me_hidden_active"
+                wowza:iconInactive="@drawable/btn_me_hidden"
+                wowza:labelText="Me Hidden"></com.pilates.app.controls.IconButton>
+        </com.pilates.app.controls.IconButtonGroup>
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/frameZoom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="280dp"
+        android:layout_marginRight="20dp">
+
+        <ImageView
+            android:id="@+id/imgZoomBg"
+            android:layout_width="200dp"
+            android:layout_height="150dp"
+            android:adjustViewBounds="false"
+            android:visibility="gone"
+            wowza:srcCompat="@drawable/panel_group_bg" />
+
+        <com.pilates.app.controls.IconButton
+            android:id="@+id/btnHideFromTrainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            wowza:dataTag="zoom_to_fill"
+            wowza:iconActive="@drawable/btn_hide_from_trainer_active"
+            wowza:iconInactive="@drawable/btn_hide_from_trainer"
+            wowza:labelText="Hide From Trainer"></com.pilates.app.controls.IconButton>
+
+        <TextView
+            android:id="@+id/tvZTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:text="Picture Zoom"
+            android:textColor="#4d5963"
+            android:textSize="16dp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <com.pilates.app.controls.IconButtonGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="20dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <com.pilates.app.controls.IconButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                wowza:dataTag="zoom_to_fill"
+                wowza:iconActive="@drawable/btn_zoom_to_fill_active"
+                wowza:iconInactive="@drawable/btn_zoom_to_fill"
+                wowza:labelText="Zoom To Fill"></com.pilates.app.controls.IconButton>
+
+            <com.pilates.app.controls.IconButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                wowza:dataTag="full_picture"
+                wowza:iconActive="@drawable/btn_fill_picture_active"
+                wowza:iconInactive="@drawable/btn_fill_picture"
+                wowza:labelText="Full Picture"></com.pilates.app.controls.IconButton>
+        </com.pilates.app.controls.IconButtonGroup>
+
+    </FrameLayout>
+    <ImageView
+        android:id="@+id/btnClosePanel"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="right"
+        android:layout_marginTop="30dp"
+        android:layout_marginRight="20dp"
+        wowza:srcCompat="@drawable/icon_close" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="80dp"
+        android:layout_height="7dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="15dp"
+        wowza:srcCompat="@drawable/drag_holder" />
+
+    <TextView
+        android:id="@+id/tvPanelTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="35dp"
+        android:text="DISPLAY CONTROL"
+        android:textColor="#929291"
+        android:textSize="20dp"
+        android:textStyle="bold" />
+</FrameLayout>
