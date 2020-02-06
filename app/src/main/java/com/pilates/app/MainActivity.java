@@ -1,13 +1,18 @@
 package com.pilates.app;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -40,6 +45,7 @@ import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
 
 import static com.pilates.app.util.Constant.HandlerMessage.CLASS_INITIALIZED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
@@ -86,7 +92,65 @@ public class MainActivity extends AppCompatActivity {
         slidingPanel.setListener(new OnSlidingPanelEventListener() {
             @Override
             public void changeLayout(String tag) {
+                final float scale = getResources().getDisplayMetrics().density;
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
+                localView.setVisibility(View.VISIBLE);
+                ViewCompat.setTranslationZ(localView, 1f);
+                ViewCompat.setTranslationZ(remoteView, 0f);
+
+                if(tag.equals("me_small")) {
+                    FrameLayout.LayoutParams rvLP = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                    remoteView.setLayoutParams(rvLP);
+
+                    FrameLayout.LayoutParams mlp = new FrameLayout.LayoutParams((int) (100 * scale + 0.5f),(int) (200 * scale + 0.5f));
+                    mlp.topMargin = (int) (40 * scale + 0.5f);
+                    mlp.rightMargin = (int) (30 * scale + 0.5f);
+                    mlp.gravity = Gravity.RIGHT;
+
+                    localView.setLayoutParams(mlp);
+
+                    localView.setBackgroundResource(R.drawable.small_cam_view);
+                    remoteView.setBackground(null);
+                }
+                else if(tag.equals("split")) {
+                    FrameLayout.LayoutParams rvLP = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)(displayMetrics.heightPixels * 0.7f));
+                    rvLP.gravity = Gravity.TOP;
+                    rvLP.topMargin = (int)(displayMetrics.heightPixels * 0.5f);
+                    remoteView.setLayoutParams(rvLP);
+
+                    FrameLayout.LayoutParams lvLP = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)(displayMetrics.heightPixels * 0.5f));
+                    lvLP.gravity = Gravity.TOP;
+                    localView.setLayoutParams(lvLP);
+
+                    localView.setBackground(null);
+                    remoteView.setBackground(null);
+                }
+                else if(tag.equals("me_large")) {
+
+                    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+                    FrameLayout.LayoutParams mlp = new FrameLayout.LayoutParams((int) (100 * scale + 0.5f), (int) (200 * scale + 0.5f));
+                    mlp.topMargin = (int) (40 * scale + 0.5f);
+                    mlp.rightMargin = (int) (30 * scale + 0.5f);
+                    mlp.gravity = Gravity.RIGHT;
+
+                    remoteView.setLayoutParams(mlp);
+                    localView.setLayoutParams(layoutParams);
+
+                    localView.setBackground(null);
+                    remoteView.setBackgroundResource(R.drawable.small_cam_view);
+
+                    ViewCompat.setTranslationZ(localView, 0f);
+                    ViewCompat.setTranslationZ(remoteView, 1f);
+                }
+                else if(tag.equals("me_hidden")) {
+                    localView.setVisibility(View.GONE);
+                    FrameLayout.LayoutParams rvLP = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                    remoteView.setLayoutParams(rvLP);
+                    remoteView.setBackground(null);
+                }
             }
         });
 
