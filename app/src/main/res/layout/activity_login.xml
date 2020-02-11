@@ -66,35 +66,6 @@
 
         </LinearLayout>
 
-
-<!--        <RadioGroup-->
-<!--            android:id="@+id/role_radio_group"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginBottom="10dp">-->
-
-<!--            &lt;!&ndash;            <RelativeLayout&ndash;&gt;-->
-<!--            &lt;!&ndash;                android:layout_width="match_parent"&ndash;&gt;-->
-<!--            &lt;!&ndash;                android:layout_height="wrap_content">&ndash;&gt;-->
-
-<!--            <RadioButton-->
-<!--                android:id="@+id/radioButtonTrainer"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:checked="true"-->
-<!--                android:text="@string/Trainer" />-->
-
-<!--            <RadioButton-->
-<!--                android:id="@+id/radioButtonTrainee"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_toRightOf="@+id/radioButtonTrainer"-->
-<!--                android:text="@string/Trainee" />-->
-
-<!--            &lt;!&ndash;            </RelativeLayout>&ndash;&gt;-->
-<!--        </RadioGroup>-->
-
-
         <Button
             android:id="@+id/loginBtn"
             android:layout_width="180dp"

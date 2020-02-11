@@ -11,8 +11,13 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.pilates.app.model.Action;
+import com.pilates.app.model.ActionBody;
+import com.pilates.app.model.ActionType;
 import com.pilates.app.model.UserSession;
 import com.pilates.app.model.dto.UserItem;
+import com.pilates.app.service.PeerConnectionClient;
+import com.pilates.app.ws.SignalingWebSocket;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,6 +44,9 @@ public class PostTraineeRegisterActivity extends AppCompatActivity {
         final ArrayAdapter<UserItem> adapter = new ArrayAdapter(this,
                 android.R.layout.simple_list_item_1, userRegistry.getTrainerItems());
 
+        PeerConnectionClient peerConnectionClient = PeerConnectionClient.getInstance();
+        peerConnectionClient.initPeerConnectionFactory(this);
+        peerConnectionClient.initPeerConnection(peerConnectionClient.initLocalMediaStream());
 
         userRegistry.setHandler(new Handler(Looper.getMainLooper()) {
             @Override
@@ -62,9 +70,9 @@ public class PostTraineeRegisterActivity extends AppCompatActivity {
 
 
             for (int i = 0; i < trainersList.getChildCount(); i++) {
-                if(position == i ){
+                if (position == i) {
                     trainersList.getChildAt(i).setBackgroundColor(Color.BLUE);
-                }else{
+                } else {
                     trainersList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
                 }
             }
@@ -76,9 +84,14 @@ public class PostTraineeRegisterActivity extends AppCompatActivity {
                 throw new RuntimeException("No trainer name");
             }
 
+            final String trainerInfoId = trainerItem.getInfoId();
+
+            final ActionBody traineeBody = ActionBody.newBuilder().withInfoId(trainerInfoId).build();
+            SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.CONNECT_TO, traineeBody));
+
             final UserSession user = UserRegistry.getInstance().getUser();
             user.setConnectorName(trainerItem.getName());
-            user.setConnectorId(trainerItem.getInfoId());
+            user.setConnectorId(trainerInfoId);
 
             startActivity(new Intent(this, MainActivity.class));
         });

@@ -30,8 +30,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".RegistrationActivity"></activity>
-        <activity android:name=".PostTrainerRegisterActivity" />
+        <activity android:name=".StartClassActivity"></activity>
+        <activity android:name=".RegistrationActivity" />
         <activity android:name=".PostTraineeRegisterActivity" />
         <activity android:name=".LoginActivity">
             <intent-filter>

@@ -60,8 +60,6 @@ public class LoginActivity extends AppCompatActivity implements
         tvSignUp = findViewById(R.id.sign_up);
 
         tvSignUp.setOnClickListener(v -> startActivity(new Intent(this, RegistrationActivity.class)));
-
-
         loginButton.setOnClickListener(this);
 
 

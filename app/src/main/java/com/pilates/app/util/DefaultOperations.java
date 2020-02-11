@@ -5,8 +5,8 @@ import android.content.Intent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import com.pilates.app.MainActivity;
 import com.pilates.app.PostTraineeRegisterActivity;
+import com.pilates.app.StartClassActivity;
 import com.pilates.app.UserRegistry;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionBody;
@@ -27,18 +27,20 @@ public class DefaultOperations {
                 .withRole(user.getRole()).build();
         SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.CONNECT, body));
 
+
         activity.runOnUiThread(() -> {
+            //initialing peer connection
             System.out.println("USER ROLE: " + user.getRole());
             if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
                 hideKeyboard(activity);
-                activity.startActivity(new Intent(activity, MainActivity.class));
+                activity.startActivity(new Intent(activity, StartClassActivity.class));
             } else {
                 activity.startActivity(new Intent(activity, PostTraineeRegisterActivity.class));
             }
         });
     }
 
-    public static void hideKeyboard(Activity activity) {
+    private static void hideKeyboard(Activity activity) {
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
         //Find the currently focused view, so we can grab the correct window token from it.
         View view = activity.getCurrentFocus();
