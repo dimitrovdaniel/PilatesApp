@@ -7,4 +7,13 @@
         <attr name="dataTag" format="string" />
     </declare-styleable>
 
+    <declare-styleable name="TestButton">
+        <attr name="tapToTestLabel" format="string" />
+        <attr name="testingLabel" format="string" />
+        <attr name="successLabel" format="string" />
+        <attr name="failLabel" format="string" />
+        <attr name="iconDefault" format="integer" />
+        <attr name="iconSuccess" format="integer" />
+        <attr name="iconError" format="integer" />
+    </declare-styleable>
 </resources>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="60dp">
+
+    <ProgressBar
+        android:id="@+id/pbBgProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:max="100"
+        android:progress="80"
+        android:progressBackgroundTintMode="add"
+        android:progressDrawable="@drawable/bg_test_button"
+        android:progressTintMode="add"
+        android:scrollbarSize="2dp" />
+
+    <FrameLayout
+        android:id="@+id/framePreClick"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_test_button_cover"
+        android:clickable="true"
+        android:focusableInTouchMode="true">
+
+    </FrameLayout>
+
+    <ImageView
+        android:id="@+id/imgTestIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_margin="10dp"
+        android:adjustViewBounds="true"
+        android:clickable="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        app:srcCompat="@drawable/icon_audio_test" />
+
+    <TextView
+        android:id="@+id/tvTestText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="60dp"
+        android:clickable="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:text="Please tap here to test"
+        android:textColor="#ffffff"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/btnHelp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="right|center_vertical"
+        android:layout_marginRight="10dp"
+        app:srcCompat="@drawable/icon_info" />
+</FrameLayout>

@@ -5,6 +5,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.pilates.app.UserRegistry;
+import com.pilates.app.handler.listeners.OnTimerCompleteListener;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.UserRole;
@@ -18,10 +19,15 @@ public class Timer {
     private ProgressBar progressBar;
     private long startTime;
     private CustomTimer countDownTimer;
+    private OnTimerCompleteListener listener;
 
     public Timer(final ProgressBar progressBar) {
         this.progressBar = progressBar;
 
+    }
+
+    public void setListener(OnTimerCompleteListener listener) {
+        this.listener = listener;
     }
 
     public Timer(final ProgressBar progressBar, final TextView tvProgressText) {
@@ -69,11 +75,7 @@ public class Timer {
 
         @Override
         public void onFinish() {
-            final UserSession user = UserRegistry.getInstance().getUser();
-            System.out.println("TIMER FINISHED");
-            if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
-                SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
-            }
+            listener.completed();
 
         }
     }

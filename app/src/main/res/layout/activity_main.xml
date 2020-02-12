@@ -74,7 +74,8 @@
             android:progressBackgroundTintMode="add"
             android:progressDrawable="@drawable/progress_drawable"
             android:progressTintMode="add"
-            android:scrollbarSize="2dp" />
+            android:scrollbarSize="2dp"
+            tools:visibility="gone" />
 
         <ImageView
             android:id="@+id/imgWLogo"
@@ -106,31 +107,54 @@
             android:adjustViewBounds="true"
             wowza:srcCompat="@drawable/icon_back" />
 
-        <RelativeLayout
-            android:id="@+id/trainerButtonsSection"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:visibility="gone">
+        <LinearLayout
+            android:id="@+id/layoutButtonsTest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="40dp"
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/holdButton"
+            <com.pilates.app.controls.TestButton
+                android:id="@+id/tbAudio"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="bottom"
-                android:background="@android:color/holo_blue_light"
-                android:text="HOLD"
-                android:visibility="visible" />
+                android:layout_height="60dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="15dp"
+                wowza:tapToTestLabel="Please tap to test your sound"
+                wowza:testingLabel="Listening to your sound"
+                wowza:successLabel="Sound quality is good!"
+                wowza:failLabel="Sound quality test failed"
+                wowza:iconDefault="@drawable/icon_audio_test"
+                wowza:iconSuccess="@drawable/icon_audio_test_passed"
+                wowza:iconError="@drawable/icon_audio_test_failed">
 
-            <Button
-                android:id="@+id/nextButton"
+            </com.pilates.app.controls.TestButton>
+
+            <com.pilates.app.controls.TestButton
+                android:id="@+id/tbStream"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="bottom"
-                android:background="@android:color/holo_blue_dark"
-                android:text="NEXT"
-                android:visibility="gone" />
-        </RelativeLayout>
+                android:layout_height="60dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="10dp"
+                wowza:tapToTestLabel="Please tap to test stream quality"
+                wowza:testingLabel="Testing your stream quality"
+                wowza:successLabel="Stream quality is good!"
+                wowza:failLabel="Stream quality test failed"
+                wowza:iconDefault="@drawable/icon_stream_test"
+                wowza:iconSuccess="@drawable/icon_stream_test_passed"
+                wowza:iconError="@drawable/icon_stream_test_failed">
+
+            </com.pilates.app.controls.TestButton>
+            <ImageView
+                android:id="@+id/btnStartClass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                wowza:srcCompat="@drawable/btn_start_inactive" />
+        </LinearLayout>
 
     </FrameLayout>
 
@@ -138,7 +162,7 @@
     <com.pilates.app.controls.SlidingPanel
         android:id="@+id/frameDisplaySettings"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_gravity="bottom">
 
 

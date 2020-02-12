@@ -1,5 +1,7 @@
 package com.pilates.app;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -11,6 +13,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -19,8 +23,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 
 import com.pilates.app.controls.SlidingPanel;
+import com.pilates.app.controls.TestButton;
 import com.pilates.app.controls.listeners.OnSlidingPanelEventListener;
+import com.pilates.app.controls.listeners.OnTestButtonListener;
 import com.pilates.app.handler.Timer;
+import com.pilates.app.handler.listeners.OnTimerCompleteListener;
 import com.pilates.app.model.Action;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.ClassInitData;
@@ -63,6 +70,12 @@ public class MainActivity extends AppCompatActivity {
     private SlidingPanel slidingPanel;
     private ProgressBar pbTimeCurrent;
     private TextView txtTimeRemaining;
+    private TestButton tbAudio;
+    private TestButton tbStream;
+
+    private boolean classReadyToStart;
+    private ImageView btnStartClass;
+    private LinearLayout layoutButtonsTest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +90,49 @@ public class MainActivity extends AppCompatActivity {
         remoteView = findViewById(R.id.svRemoteView);
         slidingPanel = findViewById(R.id.frameDisplaySettings);
         txtTimeRemaining = findViewById(R.id.txtTimeRemaining);
+        layoutButtonsTest = findViewById(R.id.layoutButtonsTest);
+        tbAudio = findViewById(R.id.tbAudio);
+        tbStream = findViewById(R.id.tbStream);
+        btnStartClass = findViewById(R.id.btnStartClass);
+        btnStartClass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(classReadyToStart) {
+                    layoutButtonsTest.setVisibility(View.GONE);
+                    // start class
+                    startStream();
+                }
+            }
+        });
+
+        tbAudio.setListener(new OnTestButtonListener() {
+            @Override
+            public void clicked(TestButton.TestButtonState state) {
+                // TODO start audio test
+            }
+
+            @Override
+            public void progressCompleted() {
+                // TODO do something after 10 seconds (test completed)
+                // below sets result of test
+                tbAudio.setTestSuccess(true);
+                checkClassReadyToStart();
+            }
+        });
+
+        tbStream.setListener(new OnTestButtonListener() {
+            @Override
+            public void clicked(TestButton.TestButtonState state) {
+                // TODO start stream test
+            }
+
+            @Override
+            public void progressCompleted() {
+                // TODO do something after stream test progress is completed
+                tbStream.setTestSuccess(true);
+                checkClassReadyToStart();
+            }
+        });
 
         slidingPanel.setListener(new OnSlidingPanelEventListener() {
             @Override
@@ -183,6 +239,16 @@ public class MainActivity extends AppCompatActivity {
         final UserSession user = userRegistry.getUser();
 
         timer = new Timer(pbTimeCurrent);
+        timer.setListener(new OnTimerCompleteListener() {
+            @Override
+            public void completed() {
+                final UserSession user = UserRegistry.getInstance().getUser();
+                System.out.println("TIMER FINISHED");
+                if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
+                    SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.NEXT));
+                }
+            }
+        });
         sessionTimer = new Timer(pbTime, txtTimeRemaining);
 
         final Handler handler = new Handler(Looper.getMainLooper()) {
@@ -238,10 +304,6 @@ public class MainActivity extends AppCompatActivity {
         webSocketListener.setMainUIHandler(handler);
         peerConnectionClient.setUiHandler(handler);
 
-        peerConnectionClient.attachStreamToViews(localView, remoteView);
-        peerConnectionClient.startStream(480, 640, 30);
-
-
 
         /*if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
             trainerButtonsSection.setVisibility(VISIBLE);
@@ -255,6 +317,18 @@ public class MainActivity extends AppCompatActivity {
             });
         }*/
 
+    }
+
+    private void startStream() {
+        peerConnectionClient.initPeerConnectionFactory(this);
+        peerConnectionClient.initPeerConnection(peerConnectionClient.initLocalMediaStream());
+        peerConnectionClient.attachStreamToViews(localView, remoteView);
+        peerConnectionClient.startStream(480, 640, 30);
+    }
+
+    private void checkClassReadyToStart() {
+        classReadyToStart = tbAudio.testComplete && tbStream.testComplete;
+        btnStartClass.setImageResource(classReadyToStart ? R.drawable.btn_start : R.drawable.btn_start_inactive);
     }
 
 
