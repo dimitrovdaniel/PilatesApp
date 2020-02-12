@@ -304,19 +304,7 @@ public class MainActivity extends AppCompatActivity {
         webSocketListener.setMainUIHandler(handler);
         peerConnectionClient.setUiHandler(handler);
 
-
-        /*if (Objects.equals(user.getRole(), UserRole.TRAINER)) {
-            trainerButtonsSection.setVisibility(VISIBLE);
-
-            holdButton.setOnClickListener(listener -> {
-            });
-
-            nextButton.setOnClickListener(listener -> {
-                nextButton.setVisibility(GONE);
-                holdButton.setVisibility(VISIBLE);
-            });
-        }*/
-
+        pbTimeCurrent.setVisibility(View.GONE);
     }
 
     private void startStream() {
@@ -324,6 +312,9 @@ public class MainActivity extends AppCompatActivity {
         peerConnectionClient.initPeerConnection(peerConnectionClient.initLocalMediaStream());
         peerConnectionClient.attachStreamToViews(localView, remoteView);
         peerConnectionClient.startStream(480, 640, 30);
+
+        // show timer for current trainee
+        pbTimeCurrent.setVisibility(View.VISIBLE);
     }
 
     private void checkClassReadyToStart() {
