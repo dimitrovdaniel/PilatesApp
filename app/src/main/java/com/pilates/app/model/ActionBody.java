@@ -19,6 +19,7 @@ public class ActionBody {
     private LocalDateTime endTime;
     //wsid, name
     private Map<String, String> trainers;
+    private MediaStats mediaStats;
 
     /*default*/ ActionBody(final Builder builder) {
         this.id = builder.id;
@@ -31,6 +32,7 @@ public class ActionBody {
         this.infoId = builder.infoId;
         this.startTime = builder.startTime;
         this.endTime = builder.endTime;
+        this.mediaStats = builder.mediaStats;
     }
 
     public static Builder newBuilder() {
@@ -124,6 +126,14 @@ public class ActionBody {
         this.endTime = endTime;
     }
 
+    public MediaStats getMediaStats() {
+        return mediaStats;
+    }
+
+    public void setMediaStats(MediaStats mediaStats) {
+        this.mediaStats = mediaStats;
+    }
+
     public static final class Builder {
 
         private String id;
@@ -136,6 +146,7 @@ public class ActionBody {
         private LocalDateTime startTime;
         private LocalDateTime endTime;
         private Map<String, String> trainers;
+        private MediaStats mediaStats;
 
         /* default */ Builder() {
         }
@@ -187,6 +198,11 @@ public class ActionBody {
 
         public Builder withInfoId(final String infoId) {
             this.infoId = infoId;
+            return this;
+        }
+
+        public Builder withMediaStats(final MediaStats mediaStats) {
+            this.mediaStats = mediaStats;
             return this;
         }
 

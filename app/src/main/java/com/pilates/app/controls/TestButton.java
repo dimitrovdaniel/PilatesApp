@@ -141,6 +141,8 @@ public class TestButton extends FrameLayout {
         };
         progress.setProgress(100);
         setLookForState();
+
+        //todo create new timer which requests stats each 1-2 sec
     }
 
     public void setListener(OnTestButtonListener listener) {

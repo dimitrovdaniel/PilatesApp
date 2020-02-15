@@ -14,6 +14,7 @@ import com.pilates.app.ws.SignalingWebSocket;
 
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
+import org.webrtc.Camera1Capturer;
 import org.webrtc.Camera1Enumerator;
 import org.webrtc.DataChannel;
 import org.webrtc.DefaultVideoDecoderFactory;
@@ -22,6 +23,7 @@ import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
+import org.webrtc.MediaStreamTrack;
 import org.webrtc.PeerConnectionFactory;
 import org.webrtc.RtpReceiver;
 import org.webrtc.RtpTransceiver;
@@ -33,8 +35,11 @@ import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_REMOTE_VIDEO;
 
@@ -48,15 +53,16 @@ public class PeerConnectionClient {
     private Context applicationContext;
     private PeerConnectionFactory peerConnectionFactory;
     private org.webrtc.PeerConnection peerConnection;
+    private SurfaceTextureHelper surfaceTextureHelper;
 
     private VideoCapturer videoCapturer;
-    private SurfaceViewRenderer localView;
-    private SurfaceViewRenderer remoteView;
-
     private MediaStream localMediaStream;
+    private VideoTrack localVideoTrack;
+    private AudioTrack localAudioTrack;
+    private VideoTrack remoteVideoTrack;
+    private CustomCameraStatistic customCameraStatistic;
 
     private PeerConnectionClient() {
-
     }
 
 
@@ -118,28 +124,48 @@ public class PeerConnectionClient {
     public MediaStream initLocalMediaStream() {
 
 
-        SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext);
+        surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext);
+        customCameraStatistic = new CustomCameraStatistic(surfaceTextureHelper, new CustomCameraEventHandler() {
+        });
         // create VideoCapturer
+
         videoCapturer = createCameraCapturer(true);
         VideoSource videoSource = peerConnectionFactory.createVideoSource(videoCapturer.isScreencast());
         AudioSource audioSource = peerConnectionFactory.createAudioSource(new MediaConstraints());
 
         videoCapturer.initialize(surfaceTextureHelper, applicationContext, videoSource.getCapturerObserver());
-
         // create VideoTrack
-        VideoTrack videoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
+        localVideoTrack = peerConnectionFactory.createVideoTrack("100", videoSource);
         // display in localView
 
-        AudioTrack audioTrack = peerConnectionFactory.createAudioTrack("101", audioSource);
-        audioTrack.setEnabled(false);
+        localAudioTrack = peerConnectionFactory.createAudioTrack("101", audioSource);
+        localAudioTrack.setEnabled(true);
 
 
         localMediaStream = peerConnectionFactory.createLocalMediaStream("mediaStreamLocal");
-        localMediaStream.addTrack(videoTrack);
-        localMediaStream.addTrack(audioTrack);
+        localMediaStream.addTrack(localVideoTrack);
+        localMediaStream.addTrack(localAudioTrack);
 
         return localMediaStream;
     }
+
+//    public void attachLocalVideoTrackToLocalMediaStream() {
+//        localMediaStream.addTrack(localVideoTrack);
+////        localMediaStream.addTrack(localAudioTrack);
+//    }
+//
+//    public void detachLocalVideoTrackFromLocalMediaStream() {
+//        localMediaStream.removeTrack(localVideoTrack);
+//    }
+//
+//    public void attachLocalAudioTrackToLocalMediaStream() {
+////        localMediaStream.addTrack(localVideoTrack);
+//        localMediaStream.addTrack(localAudioTrack);
+//    }
+//
+//    public void detachLocalAudioTrackFromLocalMediaStream() {
+//        localMediaStream.removeTrack(localAudioTrack);
+//    }
 
 
     public VideoCapturer createCameraCapturer(boolean isFront) {
@@ -150,7 +176,7 @@ public class PeerConnectionClient {
         for (String deviceName : deviceNames) {
             if (isFront ? enumerator.isFrontFacing(deviceName) : enumerator.isBackFacing(deviceName)) {
                 VideoCapturer videoCapturer = enumerator.createCapturer(deviceName, null);
-
+                setCustomCameraStatisticToVideoCapturer();
                 if (videoCapturer != null) {
                     return videoCapturer;
                 }
@@ -160,14 +186,35 @@ public class PeerConnectionClient {
         return null;
     }
 
-    public void attachStreamToViews(final SurfaceViewRenderer localView, final SurfaceViewRenderer remoteView) {
+    public void initLocalAndRemoteViews(final SurfaceViewRenderer localView, final SurfaceViewRenderer remoteView) {
         localView.setMirror(true);
         localView.init(eglBaseContext, null);
 
         remoteView.setMirror(false);
         remoteView.init(eglBaseContext, null);
 
-        localMediaStream.videoTracks.get(0).addSink(localView);
+//        localMediaStream.videoTracks.get(0).addSink(localView);
+    }
+
+    public void attachLocalStreamToView(final SurfaceViewRenderer viewRenderer) {
+        localMediaStream.videoTracks.get(0).addSink(viewRenderer);
+    }
+
+    public void detachLocalStreamFromView(final SurfaceViewRenderer viewRenderer) {
+        localMediaStream.videoTracks.get(0).removeSink(viewRenderer);
+    }
+
+    public void setCustomCameraStatisticToVideoCapturer() {
+        Camera1Capturer camera1Capturer = ((Camera1Capturer) videoCapturer);
+        try {
+            final Field cameraStatistics = videoCapturer.getClass().getSuperclass().getDeclaredField("cameraStatistics");
+            cameraStatistics.setAccessible(true);
+            cameraStatistics.set(camera1Capturer, customCameraStatistic);
+
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            //TODO impl
+            System.out.println("ERROR WHILE SETTING reflection");
+        }
     }
 
     //int width, int height, int framerate
@@ -185,12 +232,19 @@ public class PeerConnectionClient {
         }
     }
 
+
     public void resumeStream() {
-        videoCapturer.startCapture(480, 640, 30);
+        videoCapturer.startCapture(1080, 1920, 30);
     }
+
 
     public void setUiHandler(final Handler handler) {
         this.uiHandler = handler;
+
+        if (Objects.nonNull(remoteVideoTrack)) {
+            final Message message = uiHandler.obtainMessage(HANDLE_REMOTE_VIDEO, remoteVideoTrack);
+            uiHandler.sendMessage(message);
+        }
     }
 
     public void setRemoteDescription(final String answer) {
@@ -205,7 +259,10 @@ public class PeerConnectionClient {
     }
 
 
+    //JUST LISTENER
     private class PeerConnectionListener implements org.webrtc.PeerConnection.Observer, SdpObserver {
+
+        final Pattern pattern = Pattern.compile("H264/90000");
 
         private void log(String s) {
             Log.i("[PEER CONNECTION LISTENER] ", s);
@@ -262,10 +319,13 @@ public class PeerConnectionClient {
         @Override
         public void onAddStream(MediaStream mediaStream) {
             log("[Received remote initLocalMediaStream]");
-            final VideoTrack remoteVideoTrack = mediaStream.videoTracks.get(0);
+            if (Objects.nonNull(uiHandler)) {
+                final Message message = uiHandler.obtainMessage(HANDLE_REMOTE_VIDEO, mediaStream.videoTracks.get(0));
+                uiHandler.sendMessage(message);
+                return;
+            }
 
-            final Message message = uiHandler.obtainMessage(HANDLE_REMOTE_VIDEO, remoteVideoTrack);
-            uiHandler.sendMessage(message);
+            remoteVideoTrack = mediaStream.videoTracks.get(0);
         }
 
         @Override
@@ -295,7 +355,11 @@ public class PeerConnectionClient {
 
         @Override
         public void onCreateSuccess(SessionDescription sessionDescription) {
-            final String description = sessionDescription.description;
+            String description = sessionDescription.description;
+
+            if (pattern.matcher(description).find()) {
+                description = description.replaceAll("VP[8-9]/90000", "");
+            }
 
             log("[Offer created successfully] " + description);
             peerConnection.setLocalDescription(peerConnectionListener, sessionDescription);
@@ -304,16 +368,6 @@ public class PeerConnectionClient {
             final Action action = new Action(ActionType.OFFER, body);
 
             SignalingWebSocket.getInstance().sendMessage(action);
-
-//            UserRole role = UserRegistry.getInstance().getUser().getRole();
-//            if (Objects.equals(role, UserRole.TRAINER)) {
-//                SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.INIT_TRAINER));
-//
-//            }
-////            else if (Objects.equals(role, UserRole.TRAINEE)) {
-////                final ActionBody traineeBody = ActionBody.newBuilder().withInfoId(infoId).build();
-////                SignalingWebSocket.getInstance().sendMessage(new Action(ActionType.CONNECT_TO, traineeBody));
-////            }
         }
 
         @Override

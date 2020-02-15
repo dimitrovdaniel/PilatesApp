@@ -11,6 +11,7 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
 import com.neovisionaries.ws.client.WebSocketState;
+import com.pilates.app.model.MediaStats;
 import com.pilates.app.service.PeerConnectionClient;
 import com.pilates.app.UserRegistry;
 import com.pilates.app.model.Action;
@@ -33,6 +34,7 @@ import androidx.annotation.RequiresApi;
 
 import static com.pilates.app.util.Constant.HandlerMessage.CLASS_INITIALIZED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
+import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_MEDIA_STATS;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_ON_HOLD;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_SWITCHED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_TRAINEE_LEAVED;
@@ -163,7 +165,12 @@ public class SignalingWebSocketListener extends WebSocketAdapter {
             case SWITCHED:
                 mainUIHandler.sendEmptyMessage(HANDLE_SWITCHED);
                 break;
-             default:
+            case STATS:
+                final MediaStats mediaStats = body.getMediaStats();
+                final Message mediaStatsMessage = mainUIHandler.obtainMessage(HANDLE_MEDIA_STATS, mediaStats);
+                mainUIHandler.sendMessage(mediaStatsMessage);
+                break;
+            default:
                  log("No such action " + action);
                  break;
 

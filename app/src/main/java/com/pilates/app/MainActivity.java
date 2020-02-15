@@ -1,7 +1,5 @@
 package com.pilates.app;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -29,15 +27,17 @@ import com.pilates.app.controls.listeners.OnTestButtonListener;
 import com.pilates.app.handler.Timer;
 import com.pilates.app.handler.listeners.OnTimerCompleteListener;
 import com.pilates.app.model.Action;
+import com.pilates.app.model.ActionBody;
 import com.pilates.app.model.ActionType;
 import com.pilates.app.model.ClassInitData;
+import com.pilates.app.model.MediaStats;
+import com.pilates.app.model.MediaType;
 import com.pilates.app.model.UserRole;
 import com.pilates.app.model.UserSession;
 import com.pilates.app.service.PeerConnectionClient;
 import com.pilates.app.ws.SignalingWebSocket;
 import com.pilates.app.ws.SignalingWebSocketListener;
 
-import org.webrtc.EglBase;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoTrack;
 
@@ -45,6 +45,7 @@ import java.util.Objects;
 
 import static com.pilates.app.util.Constant.HandlerMessage.CLASS_INITIALIZED;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_CONNECTION_ESTABLISHED;
+import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_MEDIA_STATS;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_ON_HOLD;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_REMOTE_VIDEO;
 import static com.pilates.app.util.Constant.HandlerMessage.HANDLE_SWITCHED;
@@ -94,13 +95,14 @@ public class MainActivity extends AppCompatActivity {
         tbAudio = findViewById(R.id.tbAudio);
         tbStream = findViewById(R.id.tbStream);
         btnStartClass = findViewById(R.id.btnStartClass);
+
         btnStartClass.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(classReadyToStart) {
                     layoutButtonsTest.setVisibility(View.GONE);
                     // start class
-                    startStream();
+//                    startStream();
                 }
             }
         });
@@ -108,12 +110,15 @@ public class MainActivity extends AppCompatActivity {
         tbAudio.setListener(new OnTestButtonListener() {
             @Override
             public void clicked(TestButton.TestButtonState state) {
+                final ActionBody body = ActionBody.newBuilder().withMediaStats(new MediaStats(MediaType.AUDIO)).build();
+                webSocket.sendMessage(new Action(ActionType.STATS, body));
                 // TODO start audio test
             }
 
             @Override
             public void progressCompleted() {
                 // TODO do something after 10 seconds (test completed)
+
                 // below sets result of test
                 tbAudio.setTestSuccess(true);
                 checkClassReadyToStart();
@@ -123,12 +128,20 @@ public class MainActivity extends AppCompatActivity {
         tbStream.setListener(new OnTestButtonListener() {
             @Override
             public void clicked(TestButton.TestButtonState state) {
+
+                peerConnectionClient.attachLocalStreamToView(localView);
+                peerConnectionClient.attachLocalStreamToView(remoteView);
+                final ActionBody body = ActionBody.newBuilder().withMediaStats(new MediaStats(MediaType.VIDEO)).build();
+                webSocket.sendMessage(new Action(ActionType.STATS, body));
                 // TODO start stream test
             }
 
             @Override
             public void progressCompleted() {
                 // TODO do something after stream test progress is completed
+
+                peerConnectionClient.detachLocalStreamFromView(remoteView);
+                remoteView.clearImage();
                 tbStream.setTestSuccess(true);
                 checkClassReadyToStart();
             }
@@ -293,6 +306,17 @@ public class MainActivity extends AppCompatActivity {
 
                         sessionTimer.start((classData.totalSeconds - classData.currentSeconds) * 1000, 1000);
                         break;
+
+                    case HANDLE_MEDIA_STATS:
+                        final MediaStats mediaStats = (MediaStats) msg.obj;
+                        System.out.println("MEDIA STATS HANDLED: " + mediaStats.toString());
+
+                        final MediaType mediaType = mediaStats.getMediaType();
+                        long bytesReceived = mediaStats.getBytesReceived();
+                        long packetsReceived = mediaStats.getPacketsReceived();
+                        long packetsLost = mediaStats.getPacketsLost();
+                        long remb = mediaStats.getRemb();
+
                     default:
                         Log.i("[MAIN UI HANDLER]", "No such operation");
                         break;
@@ -303,15 +327,17 @@ public class MainActivity extends AppCompatActivity {
 
         webSocketListener.setMainUIHandler(handler);
         peerConnectionClient.setUiHandler(handler);
+        startStream();
 
         pbTimeCurrent.setVisibility(View.GONE);
     }
 
     private void startStream() {
-        peerConnectionClient.initPeerConnectionFactory(this);
-        peerConnectionClient.initPeerConnection(peerConnectionClient.initLocalMediaStream());
-        peerConnectionClient.attachStreamToViews(localView, remoteView);
-        peerConnectionClient.startStream(480, 640, 30);
+        // I commented this because
+//        peerConnectionClient.initPeerConnectionFactory(this);
+//        peerConnectionClient.initPeerConnection(peerConnectionClient.initLocalMediaStream());
+        peerConnectionClient.initLocalAndRemoteViews(localView, remoteView);
+        peerConnectionClient.startStream(1080, 1920, 30);
 
         // show timer for current trainee
         pbTimeCurrent.setVisibility(View.VISIBLE);

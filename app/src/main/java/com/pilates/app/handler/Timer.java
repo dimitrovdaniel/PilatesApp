@@ -4,13 +4,7 @@ import android.os.CountDownTimer;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.pilates.app.UserRegistry;
 import com.pilates.app.handler.listeners.OnTimerCompleteListener;
-import com.pilates.app.model.Action;
-import com.pilates.app.model.ActionType;
-import com.pilates.app.model.UserRole;
-import com.pilates.app.model.UserSession;
-import com.pilates.app.ws.SignalingWebSocket;
 
 import java.util.Objects;
 
@@ -76,7 +70,6 @@ public class Timer {
         @Override
         public void onFinish() {
             listener.completed();
-
         }
     }
 }

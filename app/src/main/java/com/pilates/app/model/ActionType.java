@@ -21,6 +21,5 @@ public enum ActionType {
     TRAINEE_LEAVED,
     ON_HOLD,
     SWITCHED,
-    PING, PONG
-
+    STATS
 }

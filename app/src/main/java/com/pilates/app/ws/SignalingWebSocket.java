@@ -35,7 +35,7 @@ public class SignalingWebSocket {
                 }
             }
 
-        }, 0, 5, TimeUnit.SECONDS);
+        }, 0, 30, TimeUnit.SECONDS);
 
         initWs();
 
