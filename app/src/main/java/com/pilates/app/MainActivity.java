@@ -317,6 +317,8 @@ public class MainActivity extends AppCompatActivity {
                         long packetsLost = mediaStats.getPacketsLost();
                         long remb = mediaStats.getRemb();
 
+                        break;
+
                     default:
                         Log.i("[MAIN UI HANDLER]", "No such operation");
                         break;
@@ -333,7 +335,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startStream() {
-        // I commented this because
+        // I commented this because it initiated in Start class activity (for trainer)
+        // and Post trainee register activity (for trainee)
+        // when we remove this activities it comes here
+
 //        peerConnectionClient.initPeerConnectionFactory(this);
 //        peerConnectionClient.initPeerConnection(peerConnectionClient.initLocalMediaStream());
         peerConnectionClient.initLocalAndRemoteViews(localView, remoteView);

@@ -59,9 +59,9 @@ public class SignalingWebSocket {
 
     private void initWs() {
         try {
-//            ws = factory.createSocket("ws://18.203.172.206:8080/streaming/callone"); // aws signaling ip
+            ws = factory.createSocket("ws://18.203.172.206:8080/streaming/callone"); // aws signaling ip
 //            ws = factory.createSocket("ws://192.168.33.31:8080/streaming/callone");  // local work ip
-            ws = factory.createSocket("ws://192.168.100.5:8080/streaming/callone");  // local ip home
+//            ws = factory.createSocket("ws://192.168.100.5:8080/streaming/callone");  // local ip home
 //            ws = factory.createSocket("ws://192.168.99.1:8080/streaming/callone");  // local ip home
 
             ws.addListener(adapter);
