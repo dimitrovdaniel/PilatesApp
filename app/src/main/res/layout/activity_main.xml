@@ -107,6 +107,28 @@
             android:adjustViewBounds="true"
             wowza:srcCompat="@drawable/icon_back" />
 
+        <ImageView
+            android:id="@+id/userCount"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_marginLeft="75dp"
+            android:layout_marginTop="100dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            wowza:srcCompat="@drawable/icon_user_count" />
+
+        <TextView
+            android:id="@+id/tvUserCount"
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="107dp"
+            android:layout_marginTop="107dp"
+            android:gravity="center_horizontal"
+            android:text="0"
+            android:textColor="@color/labelError"
+            android:textSize="14dp"
+            android:textStyle="bold" />
+
         <LinearLayout
             android:id="@+id/layoutButtonsTest"
             android:layout_width="match_parent"
