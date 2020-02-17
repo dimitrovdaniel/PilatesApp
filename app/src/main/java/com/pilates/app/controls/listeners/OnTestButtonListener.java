@@ -6,4 +6,5 @@ import com.pilates.app.controls.TestButton;
 public interface OnTestButtonListener {
     void clicked(TestButton.TestButtonState state);
     void progressCompleted();
+    void progressTick();
 }

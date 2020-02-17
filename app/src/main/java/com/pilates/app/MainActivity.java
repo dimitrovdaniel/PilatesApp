@@ -123,6 +123,12 @@ public class MainActivity extends AppCompatActivity {
                 tbAudio.setTestSuccess(true);
                 checkClassReadyToStart();
             }
+
+            @Override
+            public void progressTick() {
+                final ActionBody body = ActionBody.newBuilder().withMediaStats(new MediaStats(MediaType.AUDIO)).build();
+                webSocket.sendMessage(new Action(ActionType.STATS, body));
+            }
         });
 
         tbStream.setListener(new OnTestButtonListener() {
@@ -144,6 +150,12 @@ public class MainActivity extends AppCompatActivity {
                 remoteView.clearImage();
                 tbStream.setTestSuccess(true);
                 checkClassReadyToStart();
+            }
+
+            @Override
+            public void progressTick() {
+                final ActionBody body = ActionBody.newBuilder().withMediaStats(new MediaStats(MediaType.VIDEO)).build();
+                webSocket.sendMessage(new Action(ActionType.STATS, body));
             }
         });
 
@@ -316,6 +328,18 @@ public class MainActivity extends AppCompatActivity {
                         long packetsReceived = mediaStats.getPacketsReceived();
                         long packetsLost = mediaStats.getPacketsLost();
                         long remb = mediaStats.getRemb();
+
+                        if(mediaType == MediaType.AUDIO && tbAudio.lastMediaStats != null) {
+                            // TODO compare
+                        }
+                        else if(mediaType == MediaType.VIDEO && tbStream.lastMediaStats != null) {
+                            // TODO compare
+                        }
+
+                        if(mediaType == MediaType.AUDIO)
+                            tbAudio.lastMediaStats = mediaStats;
+                        else
+                            tbStream.lastMediaStats = mediaStats;
 
                         break;
 

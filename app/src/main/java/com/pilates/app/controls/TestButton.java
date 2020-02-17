@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.pilates.app.R;
 import com.pilates.app.controls.listeners.OnTestButtonListener;
+import com.pilates.app.model.MediaStats;
 
 import androidx.annotation.Nullable;
 
@@ -34,10 +35,13 @@ public class TestButton extends FrameLayout {
     private OnTestButtonListener listener;
 
     public boolean testComplete;
+    public MediaStats lastMediaStats;
+
     public enum TestButtonState {
         Default, Testing, Success, Error
     }
 
+    private float msSinceStartTest = 0f;
     private TestButtonState state = TestButtonState.Default;
 
     public TestButton(Context context, @Nullable AttributeSet attrs) {
@@ -112,6 +116,9 @@ public class TestButton extends FrameLayout {
                     return;
 
                 state = TestButtonState.Testing;
+
+                msSinceStartTest = 0f;
+                lastMediaStats = null;
                 timer.start();
 
                 if(listener != null)
@@ -130,7 +137,11 @@ public class TestButton extends FrameLayout {
 
             @Override
             public void onTick(long millisUntilFinished) {
+                msSinceStartTest += millisUntilFinished;
                 progress.setProgress((int)((millisUntilFinished / 10000.0) * 100));
+
+                if(msSinceStartTest >= 2000)
+                    listener.progressTick();
             }
 
             @Override
@@ -147,5 +158,9 @@ public class TestButton extends FrameLayout {
 
     public void setListener(OnTestButtonListener listener) {
         this.listener = listener;
+    }
+
+    public void setLastMediaStats(MediaStats lastMediaStats) {
+        this.lastMediaStats = lastMediaStats;
     }
 }
