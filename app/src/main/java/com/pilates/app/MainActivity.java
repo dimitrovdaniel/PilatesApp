@@ -117,10 +117,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void progressCompleted() {
-                // TODO do something after 10 seconds (test completed)
-
                 // below sets result of test
-                tbAudio.setTestSuccess(true);
+                tbAudio.checkTestSuccess();
                 checkClassReadyToStart();
             }
 
@@ -144,11 +142,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void progressCompleted() {
-                // TODO do something after stream test progress is completed
-
                 peerConnectionClient.detachLocalStreamFromView(remoteView);
                 remoteView.clearImage();
-                tbStream.setTestSuccess(true);
+                tbStream.checkTestSuccess();
                 checkClassReadyToStart();
             }
 
@@ -330,10 +326,18 @@ public class MainActivity extends AppCompatActivity {
                         long remb = mediaStats.getRemb();
 
                         if(mediaType == MediaType.AUDIO && tbAudio.lastMediaStats != null) {
-                            // TODO compare
+                            if(bytesReceived > tbAudio.lastMediaStats.getBytesReceived()
+                            && packetsReceived > tbAudio.lastMediaStats.getPacketsReceived())
+                                tbAudio.successfulTestCalls++;
+                            else
+                                tbAudio.failedTestCalls++;
                         }
                         else if(mediaType == MediaType.VIDEO && tbStream.lastMediaStats != null) {
-                            // TODO compare
+                            if(bytesReceived > tbStream.lastMediaStats.getBytesReceived()
+                                    && packetsReceived > tbStream.lastMediaStats.getPacketsReceived())
+                                tbStream.successfulTestCalls++;
+                            else
+                                tbStream.failedTestCalls++;
                         }
 
                         if(mediaType == MediaType.AUDIO)

@@ -44,6 +44,9 @@ public class TestButton extends FrameLayout {
     private float msSinceStartTest = 0f;
     private TestButtonState state = TestButtonState.Default;
 
+    public int successfulTestCalls;
+    public int failedTestCalls;
+
     public TestButton(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
@@ -64,11 +67,11 @@ public class TestButton extends FrameLayout {
         a.recycle();
     }
 
-    public void setTestSuccess(boolean isSuccess) {
-        state = isSuccess ? TestButtonState.Success : TestButtonState.Error;
-        setLookForState();
+    public void checkTestSuccess() {
+        testComplete = successfulTestCalls > failedTestCalls;
 
-        testComplete = isSuccess;
+        state = testComplete ? TestButtonState.Success : TestButtonState.Error;
+        setLookForState();
     }
 
     private void setLookForState() {
@@ -119,6 +122,8 @@ public class TestButton extends FrameLayout {
 
                 msSinceStartTest = 0f;
                 lastMediaStats = null;
+                successfulTestCalls = 0;
+                failedTestCalls = 0;
                 timer.start();
 
                 if(listener != null)
